@@ -1,0 +1,7 @@
+        public DenseRandomParams(int denseLayersNumbRange,
+                                 int firstDenseNeuronsRange,
+                                 int outputNumb,
+                                 int denseActIndexesRange,
+                                 List<string> denseActivations,
+                                 bool denseDropoutExist,
+                                 int denseDropRange)
