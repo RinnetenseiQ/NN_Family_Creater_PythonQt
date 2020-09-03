@@ -1,114 +1,180 @@
-public class ConvLayer
+public class ConvStructure
     {
-        public int activationIndex;
         Random random;
+        public int convLayersNumb;
+        public List<ConvLayer> convLayers;
 
-        public int[] slidingWindow;
-        public bool squareSlidingWindow;
+        public bool sameSlidingWindowsSize;
+        public bool sameActivations;
+        public bool allSquareSlidingWindows;
 
-        public bool dropoutExist;
-        public bool maxPullingExist;
-        public int dropoutRate;
-
-        public int filters;
-
-
-        public ConvLayer(ConvRandomParams crp, Random random, int filters)
+        public ConvStructure(ConvRandomParams crp, Random random)
         {
             this.random = random;
-            this.filters = filters;
-            slidingWindow = new int[2];
 
-            dropoutExist = random.Next(100) < 10 ? true : false;
-            maxPullingExist = random.Next(100) < 10 ? true : false;
-            if (dropoutExist) dropoutRate = random.Next(10, crp.convDropRange);
-            else dropoutRate = 0;
+            sameSlidingWindowsSize = random.Next(100) < 10 ? true : false;      //подредачить шанс
+            sameActivations = random.Next(100) < 10 ? true : false;             //подредачить шанс
+            allSquareSlidingWindows = random.Next(100) < 10 ? true : false;     //подредачить шанс
 
-            activationIndex = random.Next(crp.convActIndexesRange);
+            convLayersNumb = random.Next(1, crp.convLayersNumbRange);
+            convLayers = new List<ConvLayer>(convLayersNumb);
 
-            squareSlidingWindow = random.Next(100) <= 20 ? true : false;
-            if (squareSlidingWindow)
+            int powRandomValue = 0;
+            for (int i = 0; i < convLayers.Capacity; i++)
             {
-                slidingWindow[0] = random.Next(2, crp.slidingWindowsRange[0]);
-                slidingWindow[1] = slidingWindow[0];
+                if (i == 0) powRandomValue = random.Next(1, crp.firstConvPowFilters);
+                else powRandomValue += random.Next(0, 2);
+                int filters = (int)Math.Pow(2, powRandomValue);
+                convLayers.Add(new ConvLayer(crp, random, filters));
             }
-            else
+
+            if (sameSlidingWindowsSize) // тут уже одинаковые
             {
-                slidingWindow[0] = random.Next(1, crp.slidingWindowsRange[0]);
-                if (slidingWindow[0] > 1) slidingWindow[1] = random.Next(1, crp.slidingWindowsRange[1]);
-                else slidingWindow[1] = random.Next(2, crp.slidingWindowsRange[1]);
+                int abserber = random.Next(convLayers.Count);
+                for (int i = 0; i < convLayers.Count; i++)
+                {
+                    convLayers[i].slidingWindow = convLayers[abserber].slidingWindow;
+                }
             }
-            //Thread.Sleep(1);
+
+            if (allSquareSlidingWindows)
+            {
+                for (int i = 0; i < convLayers.Count; i++)
+                {
+                    if (convLayers[i].slidingWindow[0] > 1) convLayers[i].slidingWindow[1] = convLayers[i].slidingWindow[0];
+                    else convLayers[i].slidingWindow[0] = convLayers[i].slidingWindow[1];
+                }
+            }
+
+            if (sameActivations)
+            {
+                int sameActivationIndex = random.Next(crp.convActIndexesRange);
+                for (int i = 0; i < convLayers.Count; i++)
+                {
+                    convLayers[i].activationIndex = sameActivationIndex;
+                }
+            }
         }
 
-        public ConvLayer(ConvLayer cLayerToCopy)
-        {
-            activationIndex = cLayerToCopy.activationIndex;
-            slidingWindow = cLayerToCopy.slidingWindow;
-            dropoutExist = cLayerToCopy.dropoutExist;
-            dropoutRate = cLayerToCopy.dropoutRate;
-            maxPullingExist = cLayerToCopy.maxPullingExist;
-        } // копирующий конструктор, хз зачем, но уже написал, не удалять же. Может потом пригодится х)
 
-        public ConvLayer(int activationIndex, int[] slidingWindow, bool dropoutExist, int dropoutRate)
+        public ConvStructure(List<int[]> slidingWindows, List<int> convActivationIndexes, List<int> filters, List<int> convDropoutIndexes, List<int> dropoutRates)
         {
-            this.activationIndex = activationIndex;
-            this.slidingWindow = slidingWindow;
-            this.dropoutExist = dropoutExist;
-            this.dropoutRate = dropoutRate;
-        } // для создания объекта по описательному
-
-        
-
-        public void MutateWindow(ConvRandomParams crp, int mutateRate)
-        {
-            int mutateWay = random.Next(100);
-            if(mutateWay < 10)
+            convLayers = new List<ConvLayer>();
+            convLayersNumb = convActivationIndexes.Count;
+            for(int i = 0, counter = 0; i < convLayersNumb; i++)
             {
-                squareSlidingWindow = !squareSlidingWindow;
-                if (squareSlidingWindow)
+                bool dropoutExist = false;
+                int dropoutRate = 0;
+                if(i == convDropoutIndexes[counter])
                 {
-                    if (slidingWindow[0] > 1) slidingWindow[1] = slidingWindow[0];
-                    else slidingWindow[0] = slidingWindow[1];
+                    dropoutExist = true;
+                    dropoutRate = dropoutRates[counter];
+                    counter++;
                 }
                 else
                 {
-                    int index = random.Next(2);
-                    if (random.Next(100) < mutateRate) slidingWindow[index] = random.Next(2, crp.slidingWindowsRange[index]);
+                    dropoutExist = false;
+                    dropoutRate = 0;
+                }
+                convLayers.Add(new ConvLayer(convActivationIndexes[i], slidingWindows[i], dropoutExist, dropoutRate));
+            }
+        } // создание объекта по ConvolutionalNetwork
+
+        public void MutateFilters(ConvRandomParams crp, int mutateRate)
+        {
+            if(random.Next(100) < mutateRate)
+            {
+                int mutateIndex = random.Next(0, convLayers.Count);
+                int powIndex = 0;
+
+                while (mutateIndex != convLayers.Count)
+                {
+                    if (mutateIndex != 0) powIndex = Support.GetPow2(convLayers[mutateIndex - 1].filters);
+                    else powIndex = crp.firstConvPowFilters;
+                    powIndex += random.Next(0, 2);
+                    convLayers[mutateIndex].filters = (int)Math.Pow(2, powIndex);
+                    mutateIndex++;
                 }
             }
-            else
+        }
+
+        public void MutateLayersNumb(ConvRandomParams crp, int mutateRate)
+        {
+            if (random.Next(100) < mutateRate)
             {
-                if (random.Next(100) <= mutateRate) slidingWindow[0] = random.Next(1, crp.slidingWindowsRange[0]);
-                if (random.Next(100) <= mutateRate || slidingWindow[0] == 1)
+                convLayersNumb = random.Next(1, crp.convLayersNumbRange);
+                if (convLayersNumb >= convLayers.Count)
                 {
-                    if (slidingWindow[0] > 1) slidingWindow[1] = random.Next(1, crp.slidingWindowsRange[1]);
-                    else slidingWindow[1] = random.Next(2, crp.slidingWindowsRange[1]);
+                    convLayers.Capacity = convLayersNumb;
+                    int powIndex = Support.GetPow2(convLayers[convLayers.Count - 1].filters);
+                    while (convLayers.Count != convLayers.Capacity) // проверить условие!!
+                    {
+                        powIndex += random.Next(0, 2);
+                        //int filters = random.Next(crp.firstConvPowFilters, crp.firstConvPowFilters + crp.firstConvPowFilters * convLayers.Count); //переделать!?
+                        int filters = (int)Math.Pow(2, powIndex);
+                        convLayers.Add(new ConvLayer(crp, random, filters));
+
+                        if (sameSlidingWindowsSize) convLayers[convLayers.Count - 1].slidingWindow = convLayers[0].slidingWindow;
+                        if (sameActivations) convLayers[convLayers.Count - 1].activationIndex = convLayers[0].activationIndex;
+                        if (allSquareSlidingWindows)
+                        {
+                            if (convLayers[convLayers.Count - 1].slidingWindow[0] > 1) convLayers[convLayers.Count - 1].slidingWindow[1] = convLayers[convLayers.Count - 1].slidingWindow[0];
+                            else convLayers[convLayers.Count - 1].slidingWindow[0] = convLayers[convLayers.Count - 1].slidingWindow[1];
+                        }
+                    }
                 }
-                this.squareSlidingWindow = slidingWindow[0] == slidingWindow[1]; 
+                else
+                {
+                    convLayers.RemoveRange(convLayersNumb, convLayers.Capacity - convLayersNumb);
+                    convLayers.Capacity = convLayersNumb;
+                }
             }
 
-            if (slidingWindow[0] == slidingWindow[1]) squareSlidingWindow = true;
-            else squareSlidingWindow = false;
+
+
         }
 
         public void MutateActivation(ConvRandomParams crp, int mutateRate)
         {
-            if (random.Next(100) <= mutateRate ? true : false) activationIndex = random.Next(0, crp.convActIndexesRange);
+            if (random.Next(100) < mutateRate)
+            {
+                if (random.Next(100) < 10)
+                {
+                    sameActivations = !sameActivations;
+                    if (sameActivations)
+                    {
+                        int abserberIndex = random.Next(convLayers.Count);
+                        for (int i = 0; i < convLayers.Count; i++)
+                        {
+                            convLayers[i].activationIndex = convLayers[abserberIndex].activationIndex;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < convLayers.Count; i++)
+                    {
+                        convLayers[i].MutateActivation(crp, mutateRate);
+                    }
+                }
+            }
         }
 
-        public void MutateDropout(ConvRandomParams crp, int mutateRate)
+        public void MutateWindows(ConvRandomParams crp, int mutateRate)
         {
             if(random.Next(100) < mutateRate)
             {
-                int mutationWay = random.Next(100);
-                if (mutationWay < 10) dropoutExist = !dropoutExist;
-                else dropoutRate = random.Next(10, crp.convDropRange);
+                for (int i = 0; i < convLayers.Count; i++)
+                {
+                    if (random.Next(100) < 20)
+                    {
+                        convLayers[i].slidingWindow[0] = random.Next(1, crp.slidingWindowsRange[0]);
+                        if (convLayers[i].slidingWindow[0] > 1) convLayers[i].slidingWindow[1] = random.Next(1, crp.slidingWindowsRange[1]);
+                        else convLayers[i].slidingWindow[1] = random.Next(2, crp.slidingWindowsRange[1]);
+                    }
+                    else convLayers[i].MutateWindow(crp, mutateRate);
+
+                }
             }
-        }
-        
-        public void MutateMaxPooling(ConvRandomParams crp, int mutateRate)
-        {
-            if (random.Next(100) < mutateRate) maxPullingExist = !maxPullingExist;
         }
     }

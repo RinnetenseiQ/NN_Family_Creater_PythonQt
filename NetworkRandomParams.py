@@ -1,3 +1,5 @@
+from Support import Support
+
 class NetworkRandomParams:
     def __init__(self, notRandomLR, LR_Range, dataPath,
                  modelPath, labelPath, plotPath,
@@ -14,3 +16,4 @@ class NetworkRandomParams:
         self.dataPath = dataPath
         self.LR_Range = LR_Range
         self.notRandomLR = notRandomLR
+        self.outputNumb = Support.getOutputNumb()
