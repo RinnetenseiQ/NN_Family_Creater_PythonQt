@@ -1,9 +1,8 @@
-import math
 from abc import ABC
 from random import SystemRandom as sr
-from C2dStructure import C2dStructure
-from D2dStructure import D2dStructure
-from Chromosome import Chromosome
+from Structures.Convolutional.C2dStructure import C2dStructure
+from Structures.Dense.D2dStructure import D2dStructure
+from Chromosomes.Chromosome import Chromosome
 from GeneticProgram import GeneticProgram
 
 

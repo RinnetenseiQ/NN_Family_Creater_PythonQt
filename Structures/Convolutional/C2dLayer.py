@@ -1,7 +1,6 @@
-import sys
 from random import SystemRandom as sr
 # from C2dRandomParams import C2dRandomParams
-import C2dRandomParams
+from Structures.Convolutional import C2dRandomParams
 
 
 class C2dLayer(object):

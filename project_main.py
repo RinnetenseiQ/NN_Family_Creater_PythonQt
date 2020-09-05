@@ -3,10 +3,9 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 import sys
 from NetworkRandomParams import NetworkRandomParams
-from C2dChromosome import C2dChromosome
 from GeneticProgram import GeneticProgram
-from C2dRandomParams import C2dRandomParams
-from D2dRandomParams import D2dRandomParams
+from Structures.Convolutional.C2dRandomParams import C2dRandomParams
+from Structures.Dense.D2dRandomParams import D2dRandomParams
 from Support import Support
 from collections import deque
 

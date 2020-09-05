@@ -1,6 +1,6 @@
 from random import SystemRandom as sr
-from C2dLayer import C2dLayer
-from C2dRandomParams import C2dRandomParams
+from Structures.Convolutional.C2dLayer import C2dLayer
+from Structures.Convolutional.C2dRandomParams import C2dRandomParams
 import math
 from Support import Support
 

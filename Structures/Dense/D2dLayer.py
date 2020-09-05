@@ -1,5 +1,5 @@
 from random import SystemRandom as sr
-from D2dRandomParams import D2dRandomParams
+from Structures.Dense.D2dRandomParams import D2dRandomParams
 
 
 class D2dLayer:

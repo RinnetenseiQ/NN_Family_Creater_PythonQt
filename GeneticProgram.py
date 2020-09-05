@@ -1,6 +1,6 @@
 from NetworkRandomParams import NetworkRandomParams
-from C2dRandomParams import C2dRandomParams
-from D2dRandomParams import D2dRandomParams
+from Structures.Convolutional.C2dRandomParams import C2dRandomParams
+from Structures.Dense.D2dRandomParams import D2dRandomParams
 
 
 class GeneticProgram:
