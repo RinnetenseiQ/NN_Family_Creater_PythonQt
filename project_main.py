@@ -99,7 +99,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         #self.geneticOutput_TE.append("dfjsknf")
         self.paramsQueue.append(self.collectGUIParams())
         #self.geneticOutput_TE.append(len(self.paramsQueue))
-        
+
 
     def train_Btn_Click(self):
         pass
