@@ -1,5 +1,6 @@
 from Support import Support
 
+
 class NetworkRandomParams:
     def __init__(self, notRandomLR, LR_Range, dataPath,
                  modelPath, labelPath, plotPath,

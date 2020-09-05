@@ -1,180 +1,103 @@
-public class ConvStructure
+ public class ConvolutionalChromosome
     {
+        public readonly GeneticProgram _gp;
         Random random;
-        public int convLayersNumb;
-        public List<ConvLayer> convLayers;
 
-        public bool sameSlidingWindowsSize;
-        public bool sameActivations;
-        public bool allSquareSlidingWindows;
+        public string name;
+        public int indexNumber;
 
-        public ConvStructure(ConvRandomParams crp, Random random)
+        public float trainConstSpeed;
+        public string optimizer;
+        public string loss_function;
+
+        public double adaptiveSpeedRatio;
+        public int speedAlgorithmIndex;
+
+        public ConvStructure convPart;
+        public DenseStructure densePart;
+
+        public NetworkRandomParams nrp;
+        public ConvRandomParams crp;
+        public DenseRandomParams drp;
+
+        public float assessment;
+
+        public float accuracy;
+        public int paramsCount;
+
+        public ConvolutionalChromosome(GeneticProgram gp, Random random)
         {
+            _gp = gp;
             this.random = random;
-
-            sameSlidingWindowsSize = random.Next(100) < 10 ? true : false;      //подредачить шанс
-            sameActivations = random.Next(100) < 10 ? true : false;             //подредачить шанс
-            allSquareSlidingWindows = random.Next(100) < 10 ? true : false;     //подредачить шанс
-
-            convLayersNumb = random.Next(1, crp.convLayersNumbRange);
-            convLayers = new List<ConvLayer>(convLayersNumb);
-
-            int powRandomValue = 0;
-            for (int i = 0; i < convLayers.Capacity; i++)
-            {
-                if (i == 0) powRandomValue = random.Next(1, crp.firstConvPowFilters);
-                else powRandomValue += random.Next(0, 2);
-                int filters = (int)Math.Pow(2, powRandomValue);
-                convLayers.Add(new ConvLayer(crp, random, filters));
-            }
-
-            if (sameSlidingWindowsSize) // тут уже одинаковые
-            {
-                int abserber = random.Next(convLayers.Count);
-                for (int i = 0; i < convLayers.Count; i++)
-                {
-                    convLayers[i].slidingWindow = convLayers[abserber].slidingWindow;
-                }
-            }
-
-            if (allSquareSlidingWindows)
-            {
-                for (int i = 0; i < convLayers.Count; i++)
-                {
-                    if (convLayers[i].slidingWindow[0] > 1) convLayers[i].slidingWindow[1] = convLayers[i].slidingWindow[0];
-                    else convLayers[i].slidingWindow[0] = convLayers[i].slidingWindow[1];
-                }
-            }
-
-            if (sameActivations)
-            {
-                int sameActivationIndex = random.Next(crp.convActIndexesRange);
-                for (int i = 0; i < convLayers.Count; i++)
-                {
-                    convLayers[i].activationIndex = sameActivationIndex;
-                }
-            }
+            nrp = gp._nrp;
+            crp = gp._crp;
+            drp = gp._drp;
+            convPart = new ConvStructure(crp, random);
+            densePart = new DenseStructure(nrp, drp, random);
+            if (nrp.notRandomSpeed) trainConstSpeed = nrp.trainConstSpeedRange[0];
+            else trainConstSpeed = Convert.ToSingle(random.Next((int)(nrp.trainConstSpeedRange[0] * 1000), (int)(nrp.trainConstSpeedRange[1] * 1000))) / 1000;
+            optimizer = nrp.optimizers[random.Next(nrp.optimizers.Count)];
+            loss_function = nrp.loss_functions[random.Next(nrp.loss_functions.Count)];
         }
 
 
-        public ConvStructure(List<int[]> slidingWindows, List<int> convActivationIndexes, List<int> filters, List<int> convDropoutIndexes, List<int> dropoutRates)
+        public ConvolutionalChromosome(ConvolutionalNetwork cNet, ConvRandomParams crp, DenseRandomParams drp)
         {
-            convLayers = new List<ConvLayer>();
-            convLayersNumb = convActivationIndexes.Count;
-            for(int i = 0, counter = 0; i < convLayersNumb; i++)
-            {
-                bool dropoutExist = false;
-                int dropoutRate = 0;
-                if(i == convDropoutIndexes[counter])
-                {
-                    dropoutExist = true;
-                    dropoutRate = dropoutRates[counter];
-                    counter++;
-                }
-                else
-                {
-                    dropoutExist = false;
-                    dropoutRate = 0;
-                }
-                convLayers.Add(new ConvLayer(convActivationIndexes[i], slidingWindows[i], dropoutExist, dropoutRate));
-            }
-        } // создание объекта по ConvolutionalNetwork
+            this.crp = crp;
+            this.drp = drp;
+            //добавить рандомные параметры
+            convPart = new ConvStructure(cNet.slidingWindows, cNet.convActivationIndexes, cNet.filters, cNet.convDropoutIndexes, cNet.convDropoutRates);
+            densePart = new DenseStructure(cNet.denseActivationIndexes, cNet.neurons, cNet.denseDropoutIndexes, cNet.denseDropoutRates);
+        } // конструктор для создания хромосомы из полей описательного класса ConvolutionalNetwork для последующего использования в генетических алгоритмах (например, для поиска лучшего варианта чем текущий)
 
-        public void MutateFilters(ConvRandomParams crp, int mutateRate)
+        public void MutateConvolutional(ConvRandomParams crp, int mutateRate)
         {
             if(random.Next(100) < mutateRate)
             {
-                int mutateIndex = random.Next(0, convLayers.Count);
-                int powIndex = 0;
-
-                while (mutateIndex != convLayers.Count)
+                if(random.Next(100) < 5)
                 {
-                    if (mutateIndex != 0) powIndex = Support.GetPow2(convLayers[mutateIndex - 1].filters);
-                    else powIndex = crp.firstConvPowFilters;
-                    powIndex += random.Next(0, 2);
-                    convLayers[mutateIndex].filters = (int)Math.Pow(2, powIndex);
-                    mutateIndex++;
-                }
-            }
-        }
-
-        public void MutateLayersNumb(ConvRandomParams crp, int mutateRate)
-        {
-            if (random.Next(100) < mutateRate)
-            {
-                convLayersNumb = random.Next(1, crp.convLayersNumbRange);
-                if (convLayersNumb >= convLayers.Count)
-                {
-                    convLayers.Capacity = convLayersNumb;
-                    int powIndex = Support.GetPow2(convLayers[convLayers.Count - 1].filters);
-                    while (convLayers.Count != convLayers.Capacity) // проверить условие!!
-                    {
-                        powIndex += random.Next(0, 2);
-                        //int filters = random.Next(crp.firstConvPowFilters, crp.firstConvPowFilters + crp.firstConvPowFilters * convLayers.Count); //переделать!?
-                        int filters = (int)Math.Pow(2, powIndex);
-                        convLayers.Add(new ConvLayer(crp, random, filters));
-
-                        if (sameSlidingWindowsSize) convLayers[convLayers.Count - 1].slidingWindow = convLayers[0].slidingWindow;
-                        if (sameActivations) convLayers[convLayers.Count - 1].activationIndex = convLayers[0].activationIndex;
-                        if (allSquareSlidingWindows)
-                        {
-                            if (convLayers[convLayers.Count - 1].slidingWindow[0] > 1) convLayers[convLayers.Count - 1].slidingWindow[1] = convLayers[convLayers.Count - 1].slidingWindow[0];
-                            else convLayers[convLayers.Count - 1].slidingWindow[0] = convLayers[convLayers.Count - 1].slidingWindow[1];
-                        }
-                    }
+                    convPart = new ConvStructure(crp, random);
                 }
                 else
                 {
-                    convLayers.RemoveRange(convLayersNumb, convLayers.Capacity - convLayersNumb);
-                    convLayers.Capacity = convLayersNumb;
-                }
-            }
-
-
-
-        }
-
-        public void MutateActivation(ConvRandomParams crp, int mutateRate)
-        {
-            if (random.Next(100) < mutateRate)
-            {
-                if (random.Next(100) < 10)
-                {
-                    sameActivations = !sameActivations;
-                    if (sameActivations)
-                    {
-                        int abserberIndex = random.Next(convLayers.Count);
-                        for (int i = 0; i < convLayers.Count; i++)
-                        {
-                            convLayers[i].activationIndex = convLayers[abserberIndex].activationIndex;
-                        }
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < convLayers.Count; i++)
-                    {
-                        convLayers[i].MutateActivation(crp, mutateRate);
-                    }
+                    convPart.MutateLayersNumb(crp, mutateRate);
+                    convPart.MutateActivation(crp, mutateRate);
+                    convPart.MutateWindows(crp, mutateRate);
                 }
             }
         }
 
-        public void MutateWindows(ConvRandomParams crp, int mutateRate)
+
+        public void MutateDense(DenseRandomParams drp, int mutateRate)
         {
             if(random.Next(100) < mutateRate)
             {
-                for (int i = 0; i < convLayers.Count; i++)
+                if (random.Next(100) < 5)
                 {
-                    if (random.Next(100) < 20)
-                    {
-                        convLayers[i].slidingWindow[0] = random.Next(1, crp.slidingWindowsRange[0]);
-                        if (convLayers[i].slidingWindow[0] > 1) convLayers[i].slidingWindow[1] = random.Next(1, crp.slidingWindowsRange[1]);
-                        else convLayers[i].slidingWindow[1] = random.Next(2, crp.slidingWindowsRange[1]);
-                    }
-                    else convLayers[i].MutateWindow(crp, mutateRate);
-
+                    densePart = new DenseStructure(nrp, drp, random);
+                }
+                else
+                {
+                    densePart.MutateLayersNumb(drp, mutateRate);
+                    densePart.MutateActivation(drp, mutateRate);
+                    densePart.MutateNeurons(drp, mutateRate);
+                    densePart.MutateDropouts(drp, mutateRate);
                 }
             }
         }
+
+
+        public void UpdateAssessmentParam()
+        {
+            // TO DO
+            // assessment = convPart.convLayers.Count*8 + densePart.denseLayer.Count*8 + densePart.denseLayer[0].neurons/8;
+            //assessment = random.Next(100);
+
+            //accuracy = new Random().Next(100);
+            accuracy = random.Next(100);
+
+            paramsCount = random.Next(20, 10000);
+            //paramsCount = new Random().Next(20, 10000);
+        }
+
     }

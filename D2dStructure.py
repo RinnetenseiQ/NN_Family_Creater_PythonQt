@@ -65,16 +65,15 @@ class D2dStructure:
         way = sr.randrange(100)
         if way < 10:
             self.sameActivations = not self.sameActivations
-            if (self.sameActivations):
+            if self.sameActivations:
                 absorber = sr.randrange(len(self.layers))
                 for i in self.layers:
                     i.actIndex = self.layers[absorber].actIndex
-        # else:
-        # pass # придумать че делать иначе
-
-        # как вариант
-        # for i in self.layers:
-        # i.mutateActivation()
+        else:
+            # pass # придумать че делать иначе
+            # как вариант
+            for i in self.layers:
+                i.mutateActivation(mutateRate)
 
     def mutateNeurons(self, mutateRate):
         if not sr.randrange(100) < mutateRate: return
@@ -103,4 +102,4 @@ class D2dStructure:
                     i.dropoutRate = 0
         else:
             for i in self.layers:
-                i.mutateDropout()
+                i.mutateDropout(mutateRate)

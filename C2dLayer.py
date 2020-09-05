@@ -81,7 +81,7 @@ class C2dLayer(object):
                 self.squareKernel = False
 
     def mutateActivation(self, mutateRate):
-        if sr.randrange(100) <= mutateRate: self.actIndex = sr.randrange(self.c2d_rp.actIndexRange)
+        if sr.randrange(100) < mutateRate: self.actIndex = sr.randrange(self.c2d_rp.actIndexRange)
 
     def mutateDropout(self, mutateRate):
         if self.c2d_rp.dropoutExist:

@@ -1,5 +1,12 @@
+from NetworkRandomParams import NetworkRandomParams
+from C2dRandomParams import C2dRandomParams
+from D2dRandomParams import D2dRandomParams
+
+
 class GeneticProgram:
-    def __init__(self, nrp, c2d_rp, d2d_rp,
+    def __init__(self, nrp: NetworkRandomParams,
+                 c2d_rp: C2dRandomParams,
+                 d2d_rp: D2dRandomParams,
                  genEpoch, selection, popSize,
                  assessmentWay, percent,
                  mutateRate, accPriority=1, paramPriority=1):
