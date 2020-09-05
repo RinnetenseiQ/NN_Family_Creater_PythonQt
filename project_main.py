@@ -97,7 +97,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def search_Btn_Click(self):
         #self.geneticOutput_TE.append("dfjsknf")
         self.paramsQueue.append(self.collectGUIParams())
-        #self.geneticOutput_TE.append(len(self.paramsQueue))
+        self.geneticOutput_TE.append(str(len(self.paramsQueue)))
 
 
     def train_Btn_Click(self):
@@ -230,18 +230,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if self.ProgbarLogger_ChB.isChecked(): callbacks.append(9)
 
             nrp = NetworkRandomParams(self.constLR_ChB.isChecked(),
-                                      list(self.minLR_dSB.value(), self.maxLR_dSB.value()),
+                                      [self.minLR_dSB.value(), self.maxLR_dSB.value()],
                                       self.DatasetPath_LE.text(), self.ModelPath_LE.text(), self.Labels_LE.text(),
                                       self.PlotsPath_LE.text(), self.netName_LE.text(), optimizers, loss_func,
                                       self.networkEpoch_SB.value(), self.batchSize_SB.value())
             c2d_rp = C2dRandomParams(self.maxConv_SB.value(), self.filersPowIndex_SB.value(),
-                                     len(cActivations), cActivations, list(self.xKernel_SB.value(), self.yKernel_SB.value()),
+                                     len(cActivations), cActivations, [self.xKernel_SB.value(), self.yKernel_SB.value()],
                                      self.cDropout_ChB.isChecked(), self.cMaxDropout_SB.value())
             d2d_rp = D2dRandomParams(self.maxDense_SB.value(), self.neuronsPowIndex_SB.value(),
                                      Support.getOutputNumb(self.DatasetPath_LE.text()), len(dActivations),
                                      dActivations, self.dDropout_ChB.isChecked(), self.dMaxDropout_SB.value())
             gp = GeneticProgram(nrp, c2d_rp, d2d_rp, self.evolEpoch_SB.value(),
-                                list(self.copy_SB.value(), self.cross_SP.value(), self.mutate_SB.value()),
+                                [self.copy_SB.value(), self.cross_SP.value(), self.mutate_SB.value()],
                                 self.popSize_SB.value(), self.estimatingWay_CB.currentIndex(), 2,
                                 self.mutateRate_SB.value(), 1, 1)
             return gp

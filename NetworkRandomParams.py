@@ -17,4 +17,4 @@ class NetworkRandomParams:
         self.dataPath = dataPath
         self.LR_Range = LR_Range
         self.notRandomLR = notRandomLR
-        self.outputNumb = Support.getOutputNumb()
+        self.outputNumb = Support.getOutputNumb(dataPath)
