@@ -1,6 +1,8 @@
 from NetworkRandomParams import NetworkRandomParams
 from Structures.Convolutional.C2dRandomParams import C2dRandomParams
 from Structures.Dense.D2dRandomParams import D2dRandomParams
+from Chromosomes import Chromosome
+from Chromosomes.C2dChromosome import C2dChromosome
 
 
 class GeneticProgram:
@@ -21,3 +23,6 @@ class GeneticProgram:
         self.d2d_rp = d2d_rp
         self.c2d_rp = c2d_rp
         self.nrp = nrp
+
+    def startC2dEvolution(self):
+        pass

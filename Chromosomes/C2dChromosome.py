@@ -16,6 +16,8 @@ class C2dChromosome(Chromosome, ABC):
         self.optimizer = sr.choice(gp.nrp.optimizers)
         self.loss_func = sr.choice(gp.nrp.loss_func)
 
+
+
     def mutate(self, mutateRate):
         self.mutateCPart(mutateRate)
         self.mutateDPart(mutateRate)
