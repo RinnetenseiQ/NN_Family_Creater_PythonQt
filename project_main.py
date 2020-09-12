@@ -3,11 +3,15 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 import sys
 from NetworkRandomParams import NetworkRandomParams
-from GeneticProgram import GeneticProgram
+from ChromosomeParams import ChromosomeParams
 from Structures.Convolutional.C2dRandomParams import C2dRandomParams
 from Structures.Dense.D2dRandomParams import D2dRandomParams
 from Support import Support
 from collections import deque
+from threading import Thread
+import time
+
+from Algorithms.GeneticProgram import GeneticProgram, GeneticProgramThread
 
 # from (ui filename) import (class)
 # from Forms.project_gui import Ui_MainWindow
@@ -16,10 +20,25 @@ from collections import deque
 from Forms.mainWindow_gui import Ui_MainWindow
 
 
+class QueueProgramThread(Thread):
+    def __init__(self, chr_q: deque):
+        self.chromosome_params_queue = chr_q
+        Thread.__init__(self)
+
+    def run(self):
+        while len(self.chromosome_params_queue) > 0:
+            chromosome_params = self.chromosome_params_queue.pop()
+            genetic_program_thread = GeneticProgramThread(chromosome_params)
+            genetic_program_thread.start()
+            while genetic_program_thread.is_alive():
+                time.sleep(2)
+
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
 
+        self.queue_program_thread: QueueProgramThread = None
         self.setupUi(self)
         self.show()
         self.first_value = None
@@ -29,7 +48,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.equal = ""
 
         self.paramsQueue = deque([])
-
 
         ############## Widgets Init #################
         self.errorOutput_TE.setVisible(False)
@@ -53,7 +71,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.optimisingAlgMode_CB.addItem("Immune")
         self.optimisingAlgMode_CB.addItem("по Ивахненко")
 
-                ###### Experiments ######
+        ###### Experiments ######
         self.errorOutput_TE.append("error")
         self.geneticOutput_TE.append("genetic")
 
@@ -62,7 +80,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         #############################################
 
         ############## Widgets Listeners ############
-                ###### Buttons ######
+        ###### Buttons ######
         self.search_Btn.clicked.connect(self.search_Btn_Click)
         self.train_Btn.clicked.connect(self.train_Btn_Click)
         self.DatasetPath_TB.clicked.connect(self.datasetPath_TB_Click)
@@ -80,7 +98,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.CSVLogger_TB.clicked.connect(self.CSVLogger_TB_Click)
         self.ProgbarLogger_TB.clicked.connect(self.progbarLogger_TB_Click)
 
-                ####### ComboBoxes ###
+        ####### ComboBoxes ###
         # self.coutMode_CB.currentIndexChanged.connect(self.coutMode_CB_SelectedIndexChanged)
         self.coutMode_CB.activated.connect(self.coutMode_CB_SelectedIndexChanged)
         # self.coutMode_CB.highlighted.connect(self.coutMode_CB_SelectedIndexChanged)
@@ -93,12 +111,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ############################################
 
     ################## Listener`s methods ###############
-                ####### Buttons ########
+    ####### Buttons ########
     def search_Btn_Click(self):
-        #self.geneticOutput_TE.append("dfjsknf")
         self.paramsQueue.append(self.collectGUIParams())
-        self.geneticOutput_TE.append(str(len(self.paramsQueue)))
-
+        if self.queue_program_thread is None or not self.queue_program_thread.is_alive():
+            queue_program_thread = QueueProgramThread(self.paramsQueue)
+            queue_program_thread.start()
 
     def train_Btn_Click(self):
         pass
@@ -145,8 +163,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def progbarLogger_TB_Click(self):
         pass
 
+        ###### Comboboxes #####
 
-            ###### Comboboxes #####
     def coutMode_CB_SelectedIndexChanged(self):
         if self.coutMode_CB.currentIndex() == 0:
             self.geneticOutput_TE.setVisible(True)
@@ -160,6 +178,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.geneticOutput_TE.setVisible(False)
             self.errorOutput_TE.setVisible(False)
             self.chrOutput_TE.setVisible(True)
+
     #####################################################
 
     ################# Logic #############################
@@ -235,15 +254,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                       self.PlotsPath_LE.text(), self.netName_LE.text(), optimizers, loss_func,
                                       self.networkEpoch_SB.value(), self.batchSize_SB.value())
             c2d_rp = C2dRandomParams(self.maxConv_SB.value(), self.filersPowIndex_SB.value(),
-                                     len(cActivations), cActivations, [self.xKernel_SB.value(), self.yKernel_SB.value()],
+                                     len(cActivations), cActivations,
+                                     [self.xKernel_SB.value(), self.yKernel_SB.value()],
                                      self.cDropout_ChB.isChecked(), self.cMaxDropout_SB.value())
             d2d_rp = D2dRandomParams(self.maxDense_SB.value(), self.neuronsPowIndex_SB.value(),
                                      Support.getOutputNumb(self.DatasetPath_LE.text()), len(dActivations),
                                      dActivations, self.dDropout_ChB.isChecked(), self.dMaxDropout_SB.value())
-            gp = GeneticProgram(nrp, c2d_rp, d2d_rp, self.evolEpoch_SB.value(),
-                                [self.copy_SB.value(), self.cross_SP.value(), self.mutate_SB.value()],
-                                self.popSize_SB.value(), self.estimatingWay_CB.currentIndex(), 2,
-                                self.mutateRate_SB.value(), 1, 1)
+            gp = ChromosomeParams(nrp, c2d_rp, d2d_rp, self.evolEpoch_SB.value(),
+                                  [self.copy_SB.value(), self.cross_SP.value(), self.mutate_SB.value()],
+                                  self.popSize_SB.value(), self.estimatingWay_CB.currentIndex(), 2,
+                                  self.mutateRate_SB.value(), 1, 1)
             return gp
 
     #####################################################

@@ -1,6 +1,6 @@
  public class ConvolutionalChromosome
     {
-        public readonly GeneticProgram _gp;
+        public readonly ChromosomeParams _gp;
         Random random;
 
         public string name;
@@ -25,7 +25,7 @@
         public float accuracy;
         public int paramsCount;
 
-        public ConvolutionalChromosome(GeneticProgram gp, Random random)
+        public ConvolutionalChromosome(ChromosomeParams gp, Random random)
         {
             _gp = gp;
             this.random = random;
