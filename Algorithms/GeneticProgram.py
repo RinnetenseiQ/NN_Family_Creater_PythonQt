@@ -3,6 +3,7 @@ from Scripts.VGG import VGG
 from ChromosomeParams import ChromosomeParams
 from typing import List
 from threading import Thread
+from Support import Support
 
 
 class GeneticProgramThread(Thread):
@@ -29,6 +30,8 @@ class GeneticProgram:
 
     def c2dEvolve(self):
         self.population.clear()
+
+        ########## Initialise population ##########
         for i in range(self.chr_p.popSize):
             self.population.append(C2dChromosome(self.chr_p))
             self.population[i].name = str(i)
@@ -37,6 +40,30 @@ class GeneticProgram:
         self.getAssessment(0, self.tempMetrics)
         # self.population = sorted(args, key=lambda x: x.address)
         self.population.sort(key=lambda x: x.assesment, reverse=True)
+
+        ###########################################
+
+        ########## Main cycle with genetic operators ###########
+        selection = Support.selection(len(self.population), self.chr_p.selection)
+        for epoch in range(self.chr_p.genEpoch):
+            for i in range(len(self.population)):
+                self.tempMetrics.clear()
+                is_cross = False
+                is_mutate = False
+                # проверить условия!!
+                if i < selection[0]:
+                    self.tempMetrics.append([self.population[i].accuracy, self.population[i].paramsCount])
+                elif i < selection[0] + selection[1]:
+                    is_cross = self.population[i].mutate(self.chr_p.mutateRate)  # реализовать кросс
+                else:
+                    is_mutate = self.population[i].mutate(self.chr_p.mutateRate)
+                if is_cross or is_mutate:
+                    self.tempMetrics.append(VGG(self.population[i], self.chr_p).learn())
+
+            self.getAssessment(0, self.tempMetrics)
+
+
+        ########################################################
 
     def getAssessment(self, mode, metrics):
         if mode == 0:

@@ -27,7 +27,7 @@ class QueueProgramThread(Thread):
 
     def run(self):
         while len(self.chromosome_params_queue) > 0:
-            chromosome_params = self.chromosome_params_queue.pop()
+            chromosome_params = self.chromosome_params_queue.popleft()
             genetic_program_thread = GeneticProgramThread(chromosome_params)
             genetic_program_thread.start()
             while genetic_program_thread.is_alive():
@@ -74,6 +74,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ###### Experiments ######
         self.errorOutput_TE.append("error")
         self.geneticOutput_TE.append("genetic")
+        self.lf_CCE_ChB.setChecked(True)
 
         # self.errorOutput_TE.geometry().moveTo(self.geneticOutput_TE.)
         # self.errorOutput_TE.move(self.geneticOutput_TE.mapToGlobal(QtCore.QPoint(0, 0)))
