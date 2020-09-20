@@ -37,6 +37,7 @@ class Ui_MainWindow(object):
         self.verticalLayoutWidget_2 = QtWidgets.QWidget(self.groupBox_6)
         self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 10, 84, 171))
         self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
+        self.verticalLayoutWidget_2.setContentsMargins(10, 10, 10, 10)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")

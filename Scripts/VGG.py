@@ -4,12 +4,13 @@ import matplotlib
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
-from keras.layers import Conv2D, MaxPooling2D, ZeroPadding2D
-from keras.optimizers import SGD
-from keras.preprocessing.image import ImageDataGenerator
-from keras import backend
+#from keras.models import Sequential
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Flatten
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, ZeroPadding2D
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras import backend
 from imutils import paths
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,9 +23,13 @@ from ChromosomeParams import ChromosomeParams
 matplotlib.use("Agg")
 
 class VGG:
-    def __init__(self, chromosome: C2dChromosome, chr_p: ChromosomeParams):
+    def __init__(self, chromosome: C2dChromosome, chr_p: ChromosomeParams, mainwindow):
         self.chr_p = chr_p
         self.chromosome = chromosome
+        self.mainwindow = mainwindow
+
+    def printtextbox(self, text):
+        self.mainwindow.geneticOutput_TE.append(text)
 
     def learn(self):
         # изменить название
@@ -37,7 +42,7 @@ class VGG:
 
     def loadData(self):
         # инициализируем данные и метки
-        print("[INFO] loading images...")
+        self.printtextbox("[INFO] loading images...")
         data = []
         labels = []
         # backend.set_floatx('float16')

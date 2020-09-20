@@ -12,7 +12,7 @@ from threading import Thread
 from multiprocessing import Process, Lock
 import time
 
-from Algorithms.GeneticProgram import GeneticProgram, GeneticProgramThread
+from Algorithms.GeneticProgram import GeneticProgramThread
 
 # from (ui filename) import (class)
 # from Forms.project_gui import Ui_MainWindow
@@ -20,22 +20,6 @@ from Algorithms.GeneticProgram import GeneticProgram, GeneticProgramThread
 
 from Forms.mainWindow_gui import Ui_MainWindow
 
-
-class QueueProgramThread(Thread):
-    def __init__(self, chr_q: deque):
-        self.chromosome_params_queue = chr_q
-        Thread.__init__(self)
-
-    def run(self):
-        while len(self.chromosome_params_queue) > 0:
-            chromosome_params = self.chromosome_params_queue.popleft()
-            #genetic_program_thread = GeneticProgramThread(chromosome_params)
-            #genetic_program_thread.start()
-            #while genetic_program_thread.is_alive():
-            #    time.sleep(2)
-            proc = Process(target=GeneticProgram(chromosome_params).startGeneticSearch())
-            #proc.start()
-            proc.join()
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -120,7 +104,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def search_Btn_Click(self):
         self.paramsQueue.append(self.collectGUIParams())
         if self.queue_program_thread is None or not self.queue_program_thread.is_alive():
-            queue_program_thread = QueueProgramThread(self.paramsQueue)
+            queue_program_thread = QueueProgramThread(self.paramsQueue, self)
             queue_program_thread.start()
 
     def train_Btn_Click(self):
@@ -272,6 +256,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             return gp
 
     #####################################################
+
+
+class QueueProgramThread(Thread):
+    def __init__(self, chr_q: deque, mainwindow: MainWindow):
+        self.chromosome_params_queue = chr_q
+        self.mainwindow = mainwindow
+        Thread.__init__(self)
+
+    # def startproc(self, chromosome_params):
+    #    GeneticProgram(chromosome_params).startGeneticSearch()
+
+    def run(self):
+        while len(self.chromosome_params_queue) > 0:
+            chromosome_params = self.chromosome_params_queue.popleft()
+            genetic_program_thread = GeneticProgramThread(chromosome_params, self.mainwindow)
+            genetic_program_thread.start()
+            while genetic_program_thread.is_alive():
+                time.sleep(2)
+            # proc = Process(target=self.startproc(chromosome_params))
+            # proc.start()
+            # proc.join()
 
 
 if __name__ == '__main__':

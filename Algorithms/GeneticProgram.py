@@ -1,29 +1,33 @@
 from Chromosomes.C2dChromosome import C2dChromosome
 from Scripts.VGG import VGG
+#import Scripts.VGG as vgg
 from ChromosomeParams import ChromosomeParams
 from typing import List
 from threading import Thread
 from Support import Support
+#from project_main import MainWindow
 
 
 class GeneticProgramThread(Thread):
-    def __init__(self, chr_p: ChromosomeParams):
+    def __init__(self, chr_p: ChromosomeParams, mainwindow):
         self.chromosome_params = chr_p
+        self.mainwindow = mainwindow
         Thread.__init__(self)
 
     def run(self):
-        genetic_program = GeneticProgram(self.chromosome_params)
+        genetic_program = GeneticProgram(self.chromosome_params, self.mainwindow)
         genetic_program.startGeneticSearch()
 
 
 class GeneticProgram:
 
-    def __init__(self, chr_p: ChromosomeParams):
+    def __init__(self, chr_p: ChromosomeParams, mainwindow):
 
         self.tempMetrics = []
         self.chr_p = chr_p
         self.population: List[C2dChromosome] = []
-        print("init...\n")
+        self.mainwindow = mainwindow
+        #print("init...\n")
 
     def startGeneticSearch(self):
         self.c2dEvolve()
@@ -35,7 +39,7 @@ class GeneticProgram:
         for i in range(self.chr_p.popSize):
             self.population.append(C2dChromosome(self.chr_p))
             self.population[i].name = str(i)
-            self.tempMetrics.append(VGG(self.population[i], self.chr_p).learn())
+            self.tempMetrics.append(VGG(self.population[i], self.chr_p, self.mainwindow).learn())
 
         self.getAssessment(0, self.tempMetrics)
         # self.population = sorted(args, key=lambda x: x.address)
@@ -58,7 +62,7 @@ class GeneticProgram:
                 else:
                     is_mutate = self.population[i].mutate(self.chr_p.mutateRate)
                 if is_cross or is_mutate:
-                    self.tempMetrics.append(VGG(self.population[i], self.chr_p).learn())
+                    self.tempMetrics.append(VGG(self.population[i], self.chr_p, self.mainwindow).learn())
 
             self.getAssessment(0, self.tempMetrics)
 
