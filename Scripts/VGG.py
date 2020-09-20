@@ -1,6 +1,5 @@
 # импортируем бэкенд Agg из matplotlib для сохранения графиков на диск
 import matplotlib
-matplotlib.use("Agg")
 # подключаем необходимые пакеты
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import train_test_split
@@ -20,7 +19,7 @@ import cv2
 import os
 from Chromosomes.C2dChromosome import C2dChromosome
 from ChromosomeParams import ChromosomeParams
-
+matplotlib.use("Agg")
 
 class VGG:
     def __init__(self, chromosome: C2dChromosome, chr_p: ChromosomeParams):

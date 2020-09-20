@@ -9,6 +9,7 @@ from Structures.Dense.D2dRandomParams import D2dRandomParams
 from Support import Support
 from collections import deque
 from threading import Thread
+from multiprocessing import Process, Lock
 import time
 
 from Algorithms.GeneticProgram import GeneticProgram, GeneticProgramThread
@@ -28,10 +29,13 @@ class QueueProgramThread(Thread):
     def run(self):
         while len(self.chromosome_params_queue) > 0:
             chromosome_params = self.chromosome_params_queue.popleft()
-            genetic_program_thread = GeneticProgramThread(chromosome_params)
-            genetic_program_thread.start()
-            while genetic_program_thread.is_alive():
-                time.sleep(2)
+            #genetic_program_thread = GeneticProgramThread(chromosome_params)
+            #genetic_program_thread.start()
+            #while genetic_program_thread.is_alive():
+            #    time.sleep(2)
+            proc = Process(target=GeneticProgram(chromosome_params).startGeneticSearch())
+            #proc.start()
+            proc.join()
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
