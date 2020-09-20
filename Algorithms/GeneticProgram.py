@@ -71,5 +71,4 @@ class GeneticProgram:
             for i in metrics:
                 if i[0] < minParam and i != 0: minParam = i[0]
             for i in range(len(metrics)):
-                self.population[i].assessment = metrics[i][1]["accuracy"] + metrics[i][1]["accuracy"] * minParam / \
-                                                metrics[i][0]
+                self.population[i].assessment = metrics[i][1]["accuracy"] + metrics[i][1]["accuracy"] * minParam / metrics[i][0]
