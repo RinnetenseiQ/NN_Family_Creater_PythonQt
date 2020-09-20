@@ -32,8 +32,8 @@ class C2dChromosome(Chromosome, ABC):
         else: return False
 
     def mutateCPart(self, mutateRate):
-        if not self.sr.randrange(self.sr, 100) < mutateRate: return 0
-        if self.sr.randrange(self.sr, 100) < 10:
+        if not self.sr.randrange(100) < mutateRate: return 0
+        if self.sr.randrange(100) < 10:
             self.c2d_Part = C2dStructure(self.chr_p.c2d_rp)
         else:
             self.c2d_Part.mutateFilters(mutateRate)

@@ -43,15 +43,15 @@ class GeneticProgram:
 
         self.getAssessment(0, self.tempMetrics)
         # self.population = sorted(args, key=lambda x: x.address)
-        self.population.sort(key=lambda x: x.assesment, reverse=True)
+        self.population.sort(key=lambda x: x.assessment, reverse=True)
 
         ###########################################
 
         ########## Main cycle with genetic operators ###########
         selection = Support.selection(len(self.population), self.chr_p.selection)
         for epoch in range(self.chr_p.genEpoch):
+            self.tempMetrics.clear()
             for i in range(len(self.population)):
-                self.tempMetrics.clear()
                 is_cross = False
                 is_mutate = False
                 # проверить условия!!
@@ -75,4 +75,4 @@ class GeneticProgram:
             for i in metrics:
                 if i[0] < minParam and i != 0: minParam = i[0]
             for i in range(len(metrics)):
-                self.population[i].assessment = metrics[i][1]["accuracy"] + metrics[i][1]["accuracy"] * minParam / metrics[i][0]
+                self.population[i].assessment = metrics[i][1].get("accuracy") + metrics[i][1].get("accuracy") * minParam / metrics[i][0]

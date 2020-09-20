@@ -10,10 +10,10 @@ class Support:
         return len(os.listdir(path))  #???
 
     def selection(totalCount: int, selection: list):
-        totalPart = selection[0] + selection[1] + selection[3]
+        totalPart = selection[0] + selection[1] + selection[2]
         copyRate = float(selection[0] / totalPart)
         crossRate = float(selection[1] / totalPart)
-        mutateRate = float(selection[3] / totalPart)
+        mutateRate = float(selection[2] / totalPart)
         copyCount = round(float(copyRate*totalCount))
         crossCount = round(float(crossRate*totalCount))
         mutateCount = round(float(mutateRate*totalCount))

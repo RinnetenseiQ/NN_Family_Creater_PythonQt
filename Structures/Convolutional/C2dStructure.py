@@ -20,7 +20,7 @@ class C2dStructure:
         if c2d_rp.dropoutExist: self.dropoutsExist = True
         else: self.dropoutsExist = False
 
-        self.layersNumb = self.sr.randrange(c2d_rp.layersRange)
+        self.layersNumb = self.sr.randrange(1, c2d_rp.layersRange)
         self.layers = []
 
         absorber = 0

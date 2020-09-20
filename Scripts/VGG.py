@@ -136,7 +136,7 @@ class VGG:
         print("[INFO] evaluating network...")
         predictions = model.predict(testX, batch_size=self.chr_p.nrp.batchSize)
         report = classification_report(testY.argmax(axis=1),
-                                       predictions.argmax(axis=1), target_names=lb.classes_)
+                                       predictions.argmax(axis=1), target_names=lb.classes_, output_dict=True)
         print(report)
 
         # строим графики потерь и точности

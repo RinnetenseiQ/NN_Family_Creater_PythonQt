@@ -16,7 +16,7 @@ class C2dLayer(object):
 
         self.maxpoolExist = False
         if self.sr.randint(0, 100) < 80: self.maxpoolExist = True
-        self.actIndex = self.sr.randint(0, c2d_rp.actIndexRange)
+        self.actIndex = self.sr.randrange(0, c2d_rp.actIndexRange)
 
         self.squareKernel = False
         if self.sr.randint(0, 100) < 20: self.squareKernel = True
