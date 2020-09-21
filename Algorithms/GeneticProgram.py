@@ -1,11 +1,13 @@
 from Chromosomes.C2dChromosome import C2dChromosome
 from Scripts.VGG import VGG
-#import Scripts.VGG as vgg
+# import Scripts.VGG as vgg
 from ChromosomeParams import ChromosomeParams
 from typing import List
 from threading import Thread
 from Support import Support
-#from project_main import MainWindow
+
+
+# from project_main import MainWindow
 
 
 class GeneticProgramThread(Thread):
@@ -27,7 +29,7 @@ class GeneticProgram:
         self.chr_p = chr_p
         self.population: List[C2dChromosome] = []
         self.mainwindow = mainwindow
-        #print("init...\n")
+        # print("init...\n")
 
     def startGeneticSearch(self):
         self.c2dEvolve()
@@ -41,7 +43,7 @@ class GeneticProgram:
             self.population[i].name = str(i)
             self.tempMetrics.append(VGG(self.population[i], self.chr_p, self.mainwindow).learn())
 
-        self.getAssessment(0, self.tempMetrics)
+        self.setAssessment(0, self.tempMetrics)
         # self.population = sorted(args, key=lambda x: x.address)
         self.population.sort(key=lambda x: x.assessment, reverse=True)
 
@@ -63,17 +65,18 @@ class GeneticProgram:
                     is_mutate = self.population[i].mutate(self.chr_p.mutateRate)
                 if is_cross or is_mutate:
                     self.tempMetrics.append(VGG(self.population[i], self.chr_p, self.mainwindow).learn())
-                else: self.tempMetrics.append([self.population[i].paramsCount, self.population[i].report])
+                else:
+                    self.tempMetrics.append([self.population[i].paramsCount, self.population[i].report])
 
-            self.getAssessment(0, self.tempMetrics)
-
+            self.setAssessment(0, self.tempMetrics)
 
         ########################################################
 
-    def getAssessment(self, mode, metrics):
+    def setAssessment(self, mode, metrics):
         if mode == 0:
             minParam = metrics[0][0]
             for i in metrics:
                 if i[0] < minParam and i != 0: minParam = i[0]
             for i in range(len(metrics)):
-                self.population[i].assessment = metrics[i][1].get("accuracy") + metrics[i][1].get("accuracy") * minParam / metrics[i][0]
+                self.population[i].assessment = metrics[i][1].get("accuracy") + metrics[i][1].get(
+                    "accuracy") * minParam / metrics[i][0]

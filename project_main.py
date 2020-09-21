@@ -10,6 +10,7 @@ from Support import Support
 from collections import deque
 from threading import Thread
 import time
+import pycallgraph
 
 from Algorithms.GeneticProgram import GeneticProgramThread
 

@@ -38,15 +38,16 @@ class FitLogger(Callback):
         pass
 
     def on_train_batch_end(self, batch, logs=None):
-        if batch == 0:
-            self.main_window.geneticOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
-        else:
-            text = self.main_window.geneticOutput_TE.toPlainText().split("\n")
-            text.pop()
-            text.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
+        #if batch == 0:
+            #self.main_window.geneticOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
+        #else:
+            #text = self.main_window.geneticOutput_TE.toPlainText().split("\n")
+            #text.pop()
+            #text.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
             #self.main_window.geneticOutput_TE.clear()
             #for i in text:
                 #self.main_window.geneticOutput_TE.append(i + "\n")
+        self.main_window.geneticOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
 
 
     def on_test_batch_begin(self, batch, logs=None):

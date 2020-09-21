@@ -20,7 +20,6 @@ import pickle
 import cv2
 import os
 
-
 from Chromosomes.C2dChromosome import C2dChromosome
 from ChromosomeParams import ChromosomeParams
 from Callbacks.FitLogger import FitLogger
@@ -141,6 +140,8 @@ class VGG:
         predictions = model.predict(testX, batch_size=self.chr_p.nrp.batchSize)
         report = classification_report(testY.argmax(axis=1),
                                        predictions.argmax(axis=1), target_names=lb.classes_, output_dict=True)
+        if report == 0:
+            report = {"accuracy": 0}
         print(report)
 
         # строим графики потерь и точности
@@ -166,7 +167,8 @@ class VGG:
         # trainable_count = int(np.sum([K.count_params(p) for p in set(model.trainable_weights)]))
         # non_trainable_count = int(np.sum([K.count_params(p) for p in set(model.non_trainable_weights)]))
         # return [len(model.get_weights()), report] #or
-        return [len(model.weights), report]
+        paramsCount = model.count_params()
+        return [paramsCount, report]
 
     def saveModel(self, model, lb):
         # сохраняем модель и бинаризатор меток на диск
