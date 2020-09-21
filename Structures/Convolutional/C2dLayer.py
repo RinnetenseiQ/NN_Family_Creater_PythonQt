@@ -11,25 +11,25 @@ class C2dLayer(object):
 
         self.dropoutRate = 0
         if c2d_rp.dropoutExist:
-            if self.sr.randint(0, 100) < 10:
-                self.dropoutRate = self.sr.randint(10, c2d_rp.dropoutRange)
+            if self.sr.randrange(100) < 10:
+                self.dropoutRate = self.sr.randrange(10, c2d_rp.dropoutRange)
 
         self.maxpoolExist = False
         if self.sr.randint(0, 100) < 80: self.maxpoolExist = True
         self.actIndex = self.sr.randrange(0, c2d_rp.actIndexRange)
 
         self.squareKernel = False
-        if self.sr.randint(0, 100) < 20: self.squareKernel = True
+        if self.sr.randrange(100) < 20: self.squareKernel = True
         self.kernel = [0, 0]
         if self.squareKernel:
-            self.kernel[0] = self.sr.randint(2, c2d_rp.kernelSizeRange[0])
+            self.kernel[0] = self.sr.randrange(2, c2d_rp.kernelSizeRange[0])
             self.kernel[1] = self.kernel[0]
         else:
-            self.kernel[0] = self.sr.randint(1, c2d_rp.kernelSizeRange[0])
+            self.kernel[0] = self.sr.randrange(1, c2d_rp.kernelSizeRange[0])
             if self.kernel[0] > 1:
-                self.kernel[1] = self.sr.randint(1, c2d_rp.kernelSizeRange[1])
+                self.kernel[1] = self.sr.randrange(1, c2d_rp.kernelSizeRange[1])
             else:
-                self.kernel[1] = self.sr.randint(2, c2d_rp.kernelSizeRange[1])
+                self.kernel[1] = self.sr.randrange(2, c2d_rp.kernelSizeRange[1])
 
     def mutate(self, mutateRate):
         self.mutateKernel(mutateRate)
@@ -38,8 +38,8 @@ class C2dLayer(object):
 
     def mutateKernel(self, mutateRate):
         # что лучше юзать sr.randint() или sr.randrange()?
-        if self.sr.randint(0, 100) < mutateRate:
-            mutateWay = self.sr.randint(0, 100)
+        if self.sr.randrange(100) < mutateRate:
+            mutateWay = self.sr.randrange(100)
             # 10% шанс изменения флага squareKernel и соответствующие этому мутации
             if mutateWay < 10:
                 self.squareKernel = not self.squareKernel
@@ -90,6 +90,6 @@ class C2dLayer(object):
                     if self.dropoutRate == 0:
                         self.dropoutRate = self.sr.randrange(1, self.c2d_rp.dropoutRange)
                     else:
-                        self.dropoutRate == 0
+                        self.dropoutRate = 0
                 else:
                     self.dropoutRate = self.sr.randrange(1, self.c2d_rp.dropoutRange)

@@ -62,7 +62,7 @@ class C2dStructure:
         self.layersNumb = self.sr.randrange(self.c2d_rp.layersRange)
         diff = self.layersNumb - len(self.layers)
         if diff > 0:
-            powIndex = Support.getPow2(self.layers[len(self.layers)].filters)
+            powIndex = Support.getPow2(self.layers[len(self.layers)-1].filters)
             for i in range(diff):
                 powIndex += self.sr.randrange(2)
                 filters = math.pow(2, powIndex)

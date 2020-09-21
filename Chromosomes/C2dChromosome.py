@@ -14,7 +14,7 @@ class C2dChromosome(Chromosome, ABC):
         self.d2d_Part = D2dStructure(self.chr_p.nrp, self.chr_p.d2d_rp)
         self.sr = random.SystemRandom()
         self.name = ''
-        self.accuracy = 0
+        self.report = 0
         self.paramsCount = 0
         self.assessment = 0
 

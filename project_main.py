@@ -9,7 +9,6 @@ from Structures.Dense.D2dRandomParams import D2dRandomParams
 from Support import Support
 from collections import deque
 from threading import Thread
-from multiprocessing import Process, Lock
 import time
 
 from Algorithms.GeneticProgram import GeneticProgramThread
@@ -86,6 +85,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lambda_TB.clicked.connect(self.lambda_TB_Click)
         self.CSVLogger_TB.clicked.connect(self.CSVLogger_TB_Click)
         self.ProgbarLogger_TB.clicked.connect(self.progbarLogger_TB_Click)
+
 
         ####### ComboBoxes ###
         # self.coutMode_CB.currentIndexChanged.connect(self.coutMode_CB_SelectedIndexChanged)
@@ -259,24 +259,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 class QueueProgramThread(Thread):
-    def __init__(self, chr_q: deque, mainwindow: MainWindow):
+    def __init__(self, chr_q: deque, main_window: MainWindow):
         self.chromosome_params_queue = chr_q
-        self.mainwindow = mainwindow
+        self.main_window = main_window
         Thread.__init__(self)
-
-    # def startproc(self, chromosome_params):
-    #    GeneticProgram(chromosome_params).startGeneticSearch()
 
     def run(self):
         while len(self.chromosome_params_queue) > 0:
             chromosome_params = self.chromosome_params_queue.popleft()
-            genetic_program_thread = GeneticProgramThread(chromosome_params, self.mainwindow)
+            genetic_program_thread = GeneticProgramThread(chromosome_params, self.main_window)
             genetic_program_thread.start()
             while genetic_program_thread.is_alive():
                 time.sleep(2)
-            # proc = Process(target=self.startproc(chromosome_params))
-            # proc.start()
-            # proc.join()
 
 
 if __name__ == '__main__':

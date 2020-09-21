@@ -1,10 +1,11 @@
 # импортируем бэкенд Agg из matplotlib для сохранения графиков на диск
+import sys
 import matplotlib
 # подключаем необходимые пакеты
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-#from keras.models import Sequential
+# from keras.models import Sequential
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, ZeroPadding2D
@@ -18,18 +19,20 @@ import random
 import pickle
 import cv2
 import os
+
+
 from Chromosomes.C2dChromosome import C2dChromosome
 from ChromosomeParams import ChromosomeParams
+from Callbacks.FitLogger import FitLogger
+
 matplotlib.use("Agg")
 
+
 class VGG:
-    def __init__(self, chromosome: C2dChromosome, chr_p: ChromosomeParams, mainwindow):
+    def __init__(self, chromosome: C2dChromosome, chr_p: ChromosomeParams, main_window):
         self.chr_p = chr_p
         self.chromosome = chromosome
-        self.mainwindow = mainwindow
-
-    def printtextbox(self, text):
-        self.mainwindow.geneticOutput_TE.append(text)
+        self.main_window = main_window
 
     def learn(self):
         # изменить название
@@ -42,7 +45,7 @@ class VGG:
 
     def loadData(self):
         # инициализируем данные и метки
-        self.printtextbox("[INFO] loading images...")
+        print("[INFO] loading images...")
         data = []
         labels = []
         # backend.set_floatx('float16')
@@ -126,9 +129,10 @@ class VGG:
                                  height_shift_range=0.1, shear_range=0.2, zoom_range=0.2,
                                  horizontal_flip=True, fill_mode="nearest")
 
+        callbacks = [FitLogger(self.main_window)]
         H = model.fit_generator(aug.flow(trainX, trainY, batch_size=self.chr_p.nrp.batchSize),
                                 validation_data=(testX, testY), steps_per_epoch=len(trainX) // self.chr_p.nrp.batchSize,
-                                epochs=self.chr_p.nrp.trainEpoch)
+                                epochs=self.chr_p.nrp.trainEpoch, callbacks=callbacks)
         return H
 
     def estimateModel(self, H, model, testX, testY, lb):
