@@ -4,7 +4,7 @@ import matplotlib
 # подключаем необходимые пакеты
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 # from keras.models import Sequential
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten
@@ -139,6 +139,8 @@ class VGG:
         # оцениваем нейросеть
         print("[INFO] evaluating network...")
         predictions = model.predict(testX, batch_size=self.chr_p.nrp.batchSize)
+        matrix = confusion_matrix(testY.argmax(axis=1), np.argmax(predictions, axis=1))
+        self.main_window.errorOutput_TE.append(np.array_str(matrix))
         report = 0
         report = classification_report(testY.argmax(axis=1),
                                        predictions.argmax(axis=1), target_names=lb.classes_, output_dict=True)

@@ -288,5 +288,5 @@ if __name__ == '__main__':
     #graphviz = GraphvizOutput(output_file='graph.png')
     #with PyCallGraph(GraphvizOutput(output_file="graph.png")):
     mainWindow = MainWindow()
-    # Запуск
+        # Запуск
     sys.exit(app.exec_())
