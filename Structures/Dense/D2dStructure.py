@@ -59,7 +59,7 @@ class D2dStructure:
             diff = abs(diff)
             for i in range(diff):
                 # не нарушится ли индексация?
-                self.layers.pop(self.sr.randrange(self.sr, len(self.layers)))
+                self.layers.pop(self.sr.randrange(len(self.layers)))
 
     def mutateActivations(self, mutateRate):
         if not self.sr.randrange(100) < mutateRate: return  # стоит ли использовать рейт?

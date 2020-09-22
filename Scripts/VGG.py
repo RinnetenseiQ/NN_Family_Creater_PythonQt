@@ -39,6 +39,7 @@ class VGG:
         model = self.createModel()
         history = self.train(model, trainX, trainY, testX, testY)
         summary = self.estimateModel(history, model, testX, testY, lb)
+        if summary == [0, 0]: summary = [0, {"accuracy": 0}]
         self.saveModel(model, lb)
         return summary
 
@@ -138,6 +139,7 @@ class VGG:
         # оцениваем нейросеть
         print("[INFO] evaluating network...")
         predictions = model.predict(testX, batch_size=self.chr_p.nrp.batchSize)
+        report = 0
         report = classification_report(testY.argmax(axis=1),
                                        predictions.argmax(axis=1), target_names=lb.classes_, output_dict=True)
         if report == 0:

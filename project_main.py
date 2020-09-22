@@ -10,7 +10,9 @@ from Support import Support
 from collections import deque
 from threading import Thread
 import time
-import pycallgraph
+
+from pycallgraph import PyCallGraph
+from pycallgraph.output import GraphvizOutput
 
 from Algorithms.GeneticProgram import GeneticProgramThread
 
@@ -283,6 +285,8 @@ if __name__ == '__main__':
     # app.setStyle('Windows')
     # print(QStyleFactory.keys())
     # Сздание инстанса класса
+    #graphviz = GraphvizOutput(output_file='graph.png')
+    #with PyCallGraph(GraphvizOutput(output_file="graph.png")):
     mainWindow = MainWindow()
     # Запуск
     sys.exit(app.exec_())

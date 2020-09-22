@@ -71,7 +71,7 @@ class C2dStructure:
                 if self.sameKernel: self.layers[len(self.layers) - 1].kernel = self.layers[0].kernel
                 if self.squaredKernels:
                     if self.sr.randrange(2) == 0:
-                        self.layers[len(self.layers)].kernel[1] = self.layers[len(self.layers)].kernel[0]
+                        self.layers[len(self.layers)-1].kernel[1] = self.layers[len(self.layers)].kernel[0]
                     else:
                         self.layers[len(self.layers)].kernel[0] = self.layers[len(self.layers)].kernel[1]
         elif diff < 0:
