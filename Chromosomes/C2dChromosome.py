@@ -52,4 +52,36 @@ class C2dChromosome(Chromosome, ABC):
             self.d2d_Part.mutateActivations(mutateRate)
             self.d2d_Part.mutateLayerNumb(mutateRate)
             self.d2d_Part.mutateNeurons(mutateRate)
-        return
+        return 1
+
+    def getNetConfig(self, mode):
+        if mode == 0:
+            f_str = ""
+            cAct_str = ""
+            k_str = ""
+            cD_str = ""
+            for i in self.c2d_Part.layers:
+                f_str += str(i.filters) + " "
+                cAct_str += self.chr_p.c2d_rp.activations[i.actIndex] + " "
+                k_str += str(i.kernel[0]) + "x" + str(i.kernel[1]) + " "
+                cD_str += str(i.dropoutRate) + " "
+
+            n_str = ""
+            dAct_str = ""
+            dD_str = ""
+            for i in self.d2d_Part.layers:
+                n_str += str(i.neurons) + " "
+                dAct_str += self.chr_p.d2d_rp.activations[i.actIndex] + " "
+                dD_str += str(i.dropoutRate) + " "
+
+            chr_str = "====== Chromosome(" + self.name + "): ======" + \
+                      "\nFilters: " + f_str + \
+                      "\ncActivations: " + cAct_str + \
+                      "\nKernels: " + k_str + \
+                      "\ncDropouts: " + cD_str + \
+                      "\nNeurons: " + n_str + \
+                      "\ndActivations: " + dAct_str + \
+                      "\ndDropouts: " + dD_str + \
+                      "\n==================\n"
+            return chr_str
+

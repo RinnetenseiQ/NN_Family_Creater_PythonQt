@@ -9,6 +9,7 @@ from Support import Support
 from pycallgraph import PyCallGraph
 from pycallgraph.output import GraphvizOutput
 
+
 # from project_main import MainWindow
 
 
@@ -19,7 +20,7 @@ class GeneticProgramThread(Thread):
         Thread.__init__(self)
 
     def run(self):
-        #with PyCallGraph(GraphvizOutput(output_file="graph1.png")):
+        # with PyCallGraph(GraphvizOutput(output_file="graph1.png")):
         genetic_program = GeneticProgram(self.chromosome_params, self.mainwindow)
         genetic_program.startGeneticSearch()
 
@@ -39,25 +40,40 @@ class GeneticProgram:
 
     def c2dEvolve(self):
         self.population.clear()
+        pbValue = 0
+        self.mainwindow.progressBar.setValue(pbValue)
+        pbStep = 100/self.chr_p.genEpoch
+
 
         ########## Initialise population ##########
+        self.mainwindow.geneticOutput_TE.append("###################### Epoch 0 ####################\n") ##### GUI ######
         for i in range(self.chr_p.popSize):
             self.population.append(C2dChromosome(self.chr_p))
             self.population[i].name = str(i)
+
+            self.mainwindow.geneticOutput_TE.append(self.population[-1].getNetConfig(0))  ##### GUI ######
+
             current_metrics = VGG(self.population[i], self.chr_p, self.mainwindow).learn()
             self.population[i].paramsCount = current_metrics[0]
             self.population[i].report = current_metrics[1]
             self.tempMetrics.append(current_metrics)
 
         self.setAssessment(0, self.tempMetrics)
+
         # self.population = sorted(args, key=lambda x: x.address)
         self.population.sort(key=lambda x: x.assessment, reverse=True)
+
+        self.mainwindow.geneticOutput_TE.append(self.getAssessment())  ##### GUI ######
+        self.mainwindow.geneticOutput_TE.append("###################################################\n")  ##### GUI ######
+        # pbValue = pbValue + pbStep ##### GUI ######
+        # self.mainwindow.progressBar.setValue(pbValue) ##### GUI ######
 
         ###########################################
 
         ########## Main cycle with genetic operators ###########
         selection = Support.selection(len(self.population), self.chr_p.selection)
         for epoch in range(self.chr_p.genEpoch):
+            self.mainwindow.geneticOutput_TE.append("###################### Epoch " + str(epoch + 1) + "####################\n") ##### GUI ######
             self.tempMetrics.clear()
             for i in range(len(self.population)):
                 is_cross = False
@@ -65,17 +81,25 @@ class GeneticProgram:
                 # проверить условия!!
                 if i < selection[0]:
                     self.tempMetrics.append([self.population[i].paramsCount, self.population[i].report])
+                    self.mainwindow.geneticOutput_TE.append(self.population[i].getNetConfig(0))  ##### GUI ######
                     continue
                 elif i < selection[0] + selection[1]:
                     is_cross = self.population[i].mutate(self.chr_p.mutateRate)  # реализовать кросс
                 else:
                     is_mutate = self.population[i].mutate(self.chr_p.mutateRate)
                 if is_cross or is_mutate:
+                    self.mainwindow.geneticOutput_TE.append(self.population[i].getNetConfig(0))  ##### GUI ######
                     self.tempMetrics.append(VGG(self.population[i], self.chr_p, self.mainwindow).learn())
                 else:
+                    self.mainwindow.geneticOutput_TE.append(self.population[i].getNetConfig(0))  ##### GUI ######
                     self.tempMetrics.append([self.population[i].paramsCount, self.population[i].report])
 
             self.setAssessment(0, self.tempMetrics)
+            self.population.sort(key=lambda x: x.assessment, reverse=True)
+            self.mainwindow.geneticOutput_TE.append(self.getAssessment())  ##### GUI ######
+            self.mainwindow.geneticOutput_TE.append("###################################################\n")  ##### GUI ######
+            #pbValue = pbValue + pbStep ##### GUI ######
+            #self.mainwindow.progressBar.setValue(pbValue) ##### GUI ######
         print("############################### ENDED!!!! ############################")
 
         ########################################################
@@ -88,3 +112,11 @@ class GeneticProgram:
             for i in range(len(metrics)):
                 self.population[i].assessment = metrics[i][1].get("accuracy") + metrics[i][1].get(
                     "accuracy") * minParam / metrics[i][0]
+
+    def getAssessment(self):
+        est_str = "#### Assessments ####\n"
+        for i in self.population:
+            est_str += "Chromosome(" + i.name + "): " + str(i.report.get("accuracy")) + "|" + str(
+                i.paramsCount) + " => " + str(i.assessment) + "\n"
+        est_str += "#####################\n"
+        return est_str

@@ -11,7 +11,7 @@ class FitLogger(Callback):
     def on_train_begin(self, logs=None):
         #keys = list(logs.keys())
         #print("Starting training; got log keys: {}".format(keys))
-        self.main_window.geneticOutput_TE.append("train beginning \n")
+        self.main_window.chrOutput_TE.append("train beginning \n")
 
     def on_train_end(self, logs=None):
         pass

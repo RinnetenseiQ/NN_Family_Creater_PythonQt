@@ -59,11 +59,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.optimisingAlgMode_CB.addItem("Genetic")
         self.optimisingAlgMode_CB.addItem("Immune")
         self.optimisingAlgMode_CB.addItem("по Ивахненко")
-
+        self.progressBar.setValue(0)
         ###### Experiments ######
-        self.errorOutput_TE.append("error")
-        self.geneticOutput_TE.append("genetic")
         self.lf_CCE_ChB.setChecked(True)
+
 
         # self.errorOutput_TE.geometry().moveTo(self.geneticOutput_TE.)
         # self.errorOutput_TE.move(self.geneticOutput_TE.mapToGlobal(QtCore.QPoint(0, 0)))
