@@ -23,7 +23,6 @@ from Algorithms.GeneticProgram import GeneticProgramThread
 from Forms.mainWindow_gui import Ui_MainWindow
 
 
-
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
@@ -88,7 +87,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lambda_TB.clicked.connect(self.lambda_TB_Click)
         self.CSVLogger_TB.clicked.connect(self.CSVLogger_TB_Click)
         self.ProgbarLogger_TB.clicked.connect(self.progbarLogger_TB_Click)
-
 
         ####### ComboBoxes ###
         # self.coutMode_CB.currentIndexChanged.connect(self.coutMode_CB_SelectedIndexChanged)
@@ -285,8 +283,8 @@ if __name__ == '__main__':
     # app.setStyle('Windows')
     # print(QStyleFactory.keys())
     # Сздание инстанса класса
-    #graphviz = GraphvizOutput(output_file='graph.png')
-    #with PyCallGraph(GraphvizOutput(output_file="graph.png")):
+    # graphviz = GraphvizOutput(output_file='graph.png')
+    #with PyCallGraph(GraphvizOutput(output_file="graph1.png")):
     mainWindow = MainWindow()
-        # Запуск
+    # Запуск
     sys.exit(app.exec_())

@@ -48,7 +48,13 @@ class C2dStructure:
 
     def mutateFilters(self, mutateRate):
         if not self.sr.randrange(100) < mutateRate: return
-        index = self.sr.randrange(len(self.layers))
+
+        ###### Debug ######
+        if len(self.layers) == 0:
+            raise Exception("0 c2d")
+        ###################
+
+        index = self.sr.randrange(len(self.layers))  ### порой экзепшит
         for i in range(index, len(self.layers)):
             if i != 0:
                 powIndex = Support.getPow2(self.layers[index - 1].filters)
@@ -62,18 +68,18 @@ class C2dStructure:
         self.layersNumb = self.sr.randrange(self.c2d_rp.layersRange)
         diff = self.layersNumb - len(self.layers)
         if diff > 0:
-            powIndex = Support.getPow2(self.layers[len(self.layers)-1].filters)
+            powIndex = Support.getPow2(self.layers[-1].filters)
             for i in range(diff):
                 powIndex += self.sr.randrange(2)
                 filters = math.pow(2, powIndex)
                 self.layers.append(C2dLayer(self.c2d_rp, filters))
-                if self.sameActivation: self.layers[len(self.layers) - 1].actIndex = self.layers[0].actIndex
-                if self.sameKernel: self.layers[len(self.layers) - 1].kernel = self.layers[0].kernel
+                if self.sameActivation: self.layers[-1].actIndex = self.layers[0].actIndex
+                if self.sameKernel: self.layers[-1].kernel = self.layers[0].kernel
                 if self.squaredKernels:
                     if self.sr.randrange(2) == 0:
-                        self.layers[len(self.layers)-1].kernel[1] = self.layers[len(self.layers)].kernel[0]
+                        self.layers[-1].kernel[1] = self.layers[-1].kernel[0]
                     else:
-                        self.layers[len(self.layers)].kernel[0] = self.layers[len(self.layers)].kernel[1]
+                        self.layers[-1].kernel[0] = self.layers[-1].kernel[1]
         elif diff < 0:
             # аналогично D2dStructure
             # возможно придумаю че нить поинтереснее

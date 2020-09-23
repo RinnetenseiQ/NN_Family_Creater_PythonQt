@@ -144,6 +144,10 @@ class VGG:
         report = 0
         report = classification_report(testY.argmax(axis=1),
                                        predictions.argmax(axis=1), target_names=lb.classes_, output_dict=True)
+
+
+        if not isinstance(report, dict):
+            raise Exception(str(type(report)))
         if report == 0:
             report = {"accuracy": 0}
         print(report)
