@@ -65,7 +65,7 @@ class C2dStructure:
 
     def mutateLayersNumb(self, mutateRate):
         if not self.sr.randrange(100) < mutateRate: return
-        self.layersNumb = self.sr.randrange(self.c2d_rp.layersRange)
+        self.layersNumb = self.sr.randrange(1, self.c2d_rp.layersRange)
         diff = self.layersNumb - len(self.layers)
         if diff > 0:
             powIndex = Support.getPow2(self.layers[-1].filters)
