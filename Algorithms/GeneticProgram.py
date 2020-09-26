@@ -52,6 +52,7 @@ class GeneticProgram:
             self.population[i].name = str(i)
 
             self.mainwindow.geneticOutput_TE.append(self.population[-1].getNetConfig(0))  ##### GUI ######
+            print(self.population[-1].getNetConfig(0))
 
             current_metrics = VGG(self.population[i], self.chr_p, self.mainwindow).learn()
             self.population[i].paramsCount = current_metrics[0]
@@ -82,6 +83,8 @@ class GeneticProgram:
                 if i < selection[0]:
                     self.tempMetrics.append([self.population[i].paramsCount, self.population[i].report])
                     self.mainwindow.geneticOutput_TE.append(self.population[i].getNetConfig(0))  ##### GUI ######
+
+
                     continue
                 elif i < selection[0] + selection[1]:
                     is_cross = self.population[i].mutate(self.chr_p.mutateRate)  # реализовать кросс

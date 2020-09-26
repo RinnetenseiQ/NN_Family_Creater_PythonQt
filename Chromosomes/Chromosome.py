@@ -10,3 +10,7 @@ class Chromosome(ABC):
     @abstractmethod
     def getNetConfig(self, mode):
         pass
+
+    @abstractmethod
+    def to_json(self):
+        pass

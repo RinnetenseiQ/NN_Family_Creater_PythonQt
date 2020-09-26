@@ -28,8 +28,10 @@ class C2dChromosome(Chromosome, ABC):
     def mutate(self, mutateRate):
         is_mutateC2D = self.mutateCPart(mutateRate)
         is_mutateD2D = self.mutateDPart(mutateRate)
-        if is_mutateC2D == 1 or is_mutateD2D == 1: return True
-        else: return False
+        if is_mutateC2D == 1 or is_mutateD2D == 1:
+            return True
+        else:
+            return False
 
     def mutateCPart(self, mutateRate):
         if not self.sr.randrange(100) < mutateRate: return 0
@@ -85,3 +87,5 @@ class C2dChromosome(Chromosome, ABC):
                       "\n==================\n"
             return chr_str
 
+    def to_json(self):
+        pass
