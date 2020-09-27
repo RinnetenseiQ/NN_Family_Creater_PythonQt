@@ -2,6 +2,9 @@
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 import sys
+
+from PyQt5.QtWidgets import QFileDialog
+
 from NetworkRandomParams import NetworkRandomParams
 from ChromosomeParams import ChromosomeParams
 from Structures.Convolutional.C2dRandomParams import C2dRandomParams
@@ -111,16 +114,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         pass
 
     def datasetPath_TB_Click(self):
-        pass
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Dataset folder", ".")
+        self.DatasetPath_LE.setText(dirlist)
 
     def modelsPath_TB_Click(self):
-        pass
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Models folder", ".")
+        self.ModelPath_LE.setText(dirlist)
 
     def labelPath_TB_Click(self):
-        pass
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Labels folder", ".")
+        self.Labels_LE.setText(dirlist)
 
     def plotPath_TB_Click(self):
-        pass
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Plots folder", ".")
+        self.PlotsPath_LE.setText(dirlist)
 
     def modelCheckpoint_TB_Click(self):
         pass
