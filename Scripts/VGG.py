@@ -19,6 +19,7 @@ import random
 import pickle
 import cv2
 import os
+import socket
 
 from Chromosomes.C2dChromosome import C2dChromosome
 from ChromosomeParams import ChromosomeParams
@@ -28,10 +29,10 @@ matplotlib.use("Agg")
 
 
 class VGG:
-    def __init__(self, chromosome: C2dChromosome, chr_p: ChromosomeParams, main_window):
+    def __init__(self, chromosome: C2dChromosome, chr_p: ChromosomeParams, sock: socket):
         self.chr_p = chr_p
         self.chromosome = chromosome
-        self.main_window = main_window
+        self.sock = sock
 
     def learn(self):
         # изменить название
@@ -129,7 +130,7 @@ class VGG:
                                  height_shift_range=0.1, shear_range=0.2, zoom_range=0.2,
                                  horizontal_flip=True, fill_mode="nearest")
 
-        callbacks = [FitLogger(self.main_window)]
+        callbacks = [FitLogger(self.sock)]
         H = model.fit_generator(aug.flow(trainX, trainY, batch_size=self.chr_p.nrp.batchSize),
                                 validation_data=(testX, testY), steps_per_epoch=len(trainX) // self.chr_p.nrp.batchSize,
                                 epochs=self.chr_p.nrp.trainEpoch, callbacks=callbacks)
@@ -140,7 +141,7 @@ class VGG:
         print("[INFO] evaluating network...")
         predictions = model.predict(testX, batch_size=self.chr_p.nrp.batchSize)
         matrix = confusion_matrix(testY.argmax(axis=1), np.argmax(predictions, axis=1))
-        self.main_window.errorOutput_TE.append(np.array_str(matrix))
+        #self.main_window.errorOutput_TE.append(np.array_str(matrix))
         report = 0
         report = classification_report(testY.argmax(axis=1),
                                        predictions.argmax(axis=1), target_names=lb.classes_, output_dict=True)

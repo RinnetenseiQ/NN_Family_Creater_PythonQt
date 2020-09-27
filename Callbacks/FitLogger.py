@@ -1,17 +1,23 @@
 from tensorflow.keras.callbacks import Callback
+import socket
 #from project_main import MainWindow
 
 
 class FitLogger(Callback):
 
-    def __init__(self, main_window):
+    def __init__(self, sock: socket.socket):
         super().__init__()
-        self.main_window = main_window
+        self.sock = sock
+
+    def send(self, data):
+        self.sock.send(data.encode("UTF-8"))
 
     def on_train_begin(self, logs=None):
         #keys = list(logs.keys())
         #print("Starting training; got log keys: {}".format(keys))
-        self.main_window.chrOutput_TE.append("train beginning \n")
+        #self.main_window.chrOutput_TE.append("train beginning \n")
+        self.send("train beginning \n")
+        pass
 
     def on_train_end(self, logs=None):
         pass
@@ -38,16 +44,19 @@ class FitLogger(Callback):
         pass
 
     def on_train_batch_end(self, batch, logs=None):
-        #if batch == 0:
+        if batch == 0:
             #self.main_window.chrOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
-        #else:
+            self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
+        else:
             #text = self.main_window.chrOutput_TE.toPlainText().split("\n")
             #text.pop()
             #text.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
+            self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
             #self.main_window.chrOutput_TE.clear()
             #for i in text:
                 #self.main_window.geneticOutput_TE.append(i + "\n")
-        self.main_window.chrOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
+        #self.main_window.chrOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
+        self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
         pass
 
 

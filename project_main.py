@@ -12,12 +12,16 @@ from Structures.Dense.D2dRandomParams import D2dRandomParams
 from Support import Support
 from collections import deque
 from threading import Thread
+
+import socket
+from multiprocessing import Process
 import time
 
 from pycallgraph import PyCallGraph
 from pycallgraph.output import GraphvizOutput
 
-from Algorithms.GeneticProgram import GeneticProgramThread
+from Algorithms.GeneticProgram import GeneticProgramProcess
+from Algorithms.GeneticProgram import GeneticProgram
 
 # from (ui filename) import (class)
 # from Forms.project_gui import Ui_MainWindow
@@ -40,6 +44,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.equal = ""
 
         self.paramsQueue = deque([])
+
 
         ############## Widgets Init #################
         self.errorOutput_TE.setVisible(False)
@@ -101,6 +106,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # QtCore.QObject.connectNotify(self.search_Btn, QtCore.PYQT_SIGNAL('clicked'))
         # QtCore.QObject.connect(button, QtCore.SIGNAL('clicked()'), self.onClicked)
         ############################################
+
+        self.sock_listener = SocketListener(self)
+        self.sock_listener.start()
 
     ################## Listener`s methods ###############
     ####### Buttons ########
@@ -265,6 +273,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     #####################################################
 
 
+class SocketListener(Thread):
+    def __init__(self, mainwindow: MainWindow):
+        self.sock = socket.socket()
+        self.sock.bind(('localhost', 12346))
+        self.sock.listen(1)
+        self.mainwindow = mainwindow
+        Thread.__init__(self)
+
+    def run(self) -> None:
+        conn, addr = self.sock.accept()
+        while True:
+            data = conn.recv(2048).decode('UTF-8')
+            if not data:
+                continue
+            self.mainwindow.geneticOutput_TE.append(data)
+
+
 class QueueProgramThread(Thread):
     def __init__(self, chr_q: deque, main_window: MainWindow):
         self.chromosome_params_queue = chr_q
@@ -274,10 +299,15 @@ class QueueProgramThread(Thread):
     def run(self):
         while len(self.chromosome_params_queue) > 0:
             chromosome_params = self.chromosome_params_queue.popleft()
-            genetic_program_thread = GeneticProgramThread(chromosome_params, self.main_window)
-            genetic_program_thread.start()
-            while genetic_program_thread.is_alive():
-                time.sleep(2)
+            #genetic_program_process = GeneticProgramProcess(chromosome_params, self.main_window)
+            #genetic_program_process.start()
+            prog = GeneticProgramProcess(chromosome_params)
+            prog.run()
+            #proc = Process(target=prog.startGeneticSearch())
+            #proc.start()
+            #proc.join()
+            #while genetic_program_process.is_alive():
+            #    time.sleep(2)
 
 
 if __name__ == '__main__':
