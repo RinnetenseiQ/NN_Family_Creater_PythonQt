@@ -1,6 +1,9 @@
 from tensorflow.keras.callbacks import Callback
 import socket
-#from project_main import MainWindow
+import json
+
+
+# from project_main import MainWindow
 
 
 class FitLogger(Callback):
@@ -9,14 +12,16 @@ class FitLogger(Callback):
         super().__init__()
         self.sock = sock
 
-    def send(self, data):
+    def send(self, data, codeword):
+        data = {"codeword": codeword, "data": data}
+        data = json.dumps(data)
         self.sock.send(data.encode("UTF-8"))
 
     def on_train_begin(self, logs=None):
-        #keys = list(logs.keys())
-        #print("Starting training; got log keys: {}".format(keys))
-        #self.main_window.chrOutput_TE.append("train beginning \n")
-        self.send("train beginning \n")
+        # keys = list(logs.keys())
+        # print("Starting training; got log keys: {}".format(keys))
+        # self.main_window.chrOutput_TE.append("train beginning \n")
+        self.send("train beginning \n", "chrOutput_TE")
         pass
 
     def on_train_end(self, logs=None):
@@ -44,21 +49,21 @@ class FitLogger(Callback):
         pass
 
     def on_train_batch_end(self, batch, logs=None):
-        if batch == 0:
-            #self.main_window.chrOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
-            self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
-        else:
-            #text = self.main_window.chrOutput_TE.toPlainText().split("\n")
-            #text.pop()
-            #text.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
-            self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
-            #self.main_window.chrOutput_TE.clear()
-            #for i in text:
-                #self.main_window.geneticOutput_TE.append(i + "\n")
-        #self.main_window.chrOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
-        self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
-        pass
-
+        self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]), "chrOutput_TE")
+        # if batch == 0:
+        #     #self.main_window.chrOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
+        #     self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]), "chrOutput_TE")
+        # else:
+        #     #text = self.main_window.chrOutput_TE.toPlainText().split("\n")
+        #     #text.pop()
+        #     #text.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
+        #     self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]), "chrOutput_TE")
+        #     #self.main_window.chrOutput_TE.clear()
+        #     #for i in text:
+        #         #self.main_window.geneticOutput_TE.append(i + "\n")
+        # #self.main_window.chrOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
+        # self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
+        # pass
 
     def on_test_batch_begin(self, batch, logs=None):
         pass

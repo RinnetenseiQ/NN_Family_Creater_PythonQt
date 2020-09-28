@@ -2,6 +2,7 @@
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 import sys
+import json
 
 from PyQt5.QtWidgets import QFileDialog
 
@@ -45,7 +46,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.paramsQueue = deque([])
 
-
         ############## Widgets Init #################
         self.errorOutput_TE.setVisible(False)
         self.errorOutput_TE.move(self.geneticOutput_TE.mapToParent(QtCore.QPoint(0, 0)))
@@ -70,7 +70,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(0)
         ###### Experiments ######
         self.lf_CCE_ChB.setChecked(True)
-
 
         # self.errorOutput_TE.geometry().moveTo(self.geneticOutput_TE.)
         # self.errorOutput_TE.move(self.geneticOutput_TE.mapToGlobal(QtCore.QPoint(0, 0)))
@@ -273,6 +272,43 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     #####################################################
 
 
+class UIHandler(QtCore.QObject):
+    def __init__(self):
+        super().__init__()
+        self.sock = socket.socket()
+        self.sock.bind(('localhost', 12346))
+        self.sock.listen(1)
+        #self.signal = QtCore.pyqtSignal()
+
+    def run(self):
+        conn, addr = self.sock.accept()
+        while True:
+            data = conn.recv(2048).decode('UTF-8')
+            if not data:
+                continue
+            data = eval(data)
+            if data.get("codeword") == "geneticOutput_TE":
+                #self.mainwindow.geneticOutput_TE.append(data.get("data"))
+                #self.signal.emit()
+                pass
+            elif data.get("codeword") == "chrOutput_TE":
+                #self.mainwindow.chrOutput_TE.append(data.get("data"))
+                pass
+            # посылаем сигнал из второго потока в GUI поток
+            #            self.newTextAndColor.emit(
+            #                '{} - thread 2 variant 1.\n'.format(str(time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime()))),
+            #                QColor(0, 0, 255)
+            #            )
+            #        QtCore.QThread.msleep(1000)
+
+            # посылаем сигнал из второго потока в GUI поток
+            # self.newTextAndColor.emit(
+            #     '{} - thread 2 variant 2.\n'.format(str(time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime()))),
+            #     QColor(255, 0, 0)
+            # )
+            QtCore.QThread.msleep(1000)
+
+
 class SocketListener(Thread):
     def __init__(self, mainwindow: MainWindow):
         self.sock = socket.socket()
@@ -287,7 +323,11 @@ class SocketListener(Thread):
             data = conn.recv(2048).decode('UTF-8')
             if not data:
                 continue
-            self.mainwindow.geneticOutput_TE.append(data)
+            data = eval(data)
+            if data.get("codeword") == "geneticOutput_TE":
+                self.mainwindow.geneticOutput_TE.append(data.get("data"))
+            elif data.get("codeword") == "chrOutput_TE":
+                self.mainwindow.chrOutput_TE.append(data.get("data"))
 
 
 class QueueProgramThread(Thread):
@@ -299,14 +339,14 @@ class QueueProgramThread(Thread):
     def run(self):
         while len(self.chromosome_params_queue) > 0:
             chromosome_params = self.chromosome_params_queue.popleft()
-            #genetic_program_process = GeneticProgramProcess(chromosome_params, self.main_window)
-            #genetic_program_process.start()
+            # genetic_program_process = GeneticProgramProcess(chromosome_params, self.main_window)
+            # genetic_program_process.start()
             prog = GeneticProgramProcess(chromosome_params)
             prog.run()
-            #proc = Process(target=prog.startGeneticSearch())
-            #proc.start()
-            #proc.join()
-            #while genetic_program_process.is_alive():
+            # proc = Process(target=prog.startGeneticSearch())
+            # proc.start()
+            # proc.join()
+            # while genetic_program_process.is_alive():
             #    time.sleep(2)
 
 
@@ -320,7 +360,7 @@ if __name__ == '__main__':
     # print(QStyleFactory.keys())
     # Сздание инстанса класса
     # graphviz = GraphvizOutput(output_file='graph.png')
-    #with PyCallGraph(GraphvizOutput(output_file="graph1.png")):
+    # with PyCallGraph(GraphvizOutput(output_file="graph1.png")):
     mainWindow = MainWindow()
     # Запуск
     sys.exit(app.exec_())
