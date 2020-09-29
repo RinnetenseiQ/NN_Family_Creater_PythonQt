@@ -106,8 +106,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # QtCore.QObject.connect(button, QtCore.SIGNAL('clicked()'), self.onClicked)
         ############################################
 
+
+        ############### Commutators ################
+                ####### Slots-Signals #######
+        # # создадим поток
+        # self.thread = QtCore.QThread()
+        # # создадим объект для выполнения кода в другом потоке
+        # self.ui_handler = UIHandler()
+        # # перенесём объект в другой поток
+        # self.ui_handler.moveToThread(self.thread)
+        # # после чего подключим все сигналы и слоты
+        # self.ui_handler.signal.connect(self.refresh_UI)
+        # # подключим сигнал старта потока к методу run у объекта, который должен выполнять код в другом потоке
+        # self.thread.started.connect(self.ui_handler.run)
+        # # запустим поток
+        # self.thread.start()
+                #############################
+                ########### Naive ###########
         self.sock_listener = SocketListener(self)
         self.sock_listener.start()
+                #############################
+        ############################################
 
     ################## Listener`s methods ###############
     ####### Buttons ########
@@ -166,6 +185,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def progbarLogger_TB_Click(self):
         pass
 
+        ###### Slots ##########
+    @QtCore.pyqtSlot(str, object)
+    def refresh_UI(self, data: dict):
+        if data.get("codeword") == "geneticOutput_TE":
+            self.mainwindow.geneticOutput_TE.append(data.get("data"))
+
+
+        #######################
         ###### Comboboxes #####
 
     def coutMode_CB_SelectedIndexChanged(self):
@@ -273,12 +300,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 class UIHandler(QtCore.QObject):
+    signal = QtCore.pyqtSignal(str, object)
+
     def __init__(self):
         super().__init__()
+        #QtCore.QObject.__init__(self)
         self.sock = socket.socket()
-        self.sock.bind(('localhost', 12346))
+        self.sock.bind(('localhost', 12246))
         self.sock.listen(1)
-        #self.signal = QtCore.pyqtSignal()
+        #self.signal = QtCore.pyqtSignal(str, object)
 
     def run(self):
         conn, addr = self.sock.accept()
@@ -288,6 +318,7 @@ class UIHandler(QtCore.QObject):
                 continue
             data = eval(data)
             if data.get("codeword") == "geneticOutput_TE":
+                #signal.emit
                 #self.mainwindow.geneticOutput_TE.append(data.get("data"))
                 #self.signal.emit()
                 pass
@@ -312,7 +343,7 @@ class UIHandler(QtCore.QObject):
 class SocketListener(Thread):
     def __init__(self, mainwindow: MainWindow):
         self.sock = socket.socket()
-        self.sock.bind(('localhost', 12346))
+        self.sock.bind(('localhost', 12246))
         self.sock.listen(1)
         self.mainwindow = mainwindow
         Thread.__init__(self)

@@ -49,7 +49,7 @@ class GeneticProgram:
         self.population: List[C2dChromosome] = []
         # print("init...\n")
         self.sock = socket.socket()
-        self.sock.connect(('localhost', 12346))
+        self.sock.connect(('localhost', 12246))
 
     def startGeneticSearch(self):
         self.c2dEvolve()
