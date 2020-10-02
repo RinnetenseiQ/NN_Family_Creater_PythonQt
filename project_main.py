@@ -1,6 +1,8 @@
 # from PySide2 import QtWidgets
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
+from PyQt5.QtCore import QCoreApplication, QSettings
+
 import sys
 import json
 
@@ -34,10 +36,13 @@ from Forms.mainWindow_gui import Ui_MainWindow
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
+        self.settings = QSettings()
 
         self.queue_program_thread: QueueProgramThread = None
         self.setupUi(self)
+        self.loadSettings()
         self.show()
+
         self.first_value = None
         self.second_value = None
         self.result = None
@@ -106,9 +111,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # QtCore.QObject.connect(button, QtCore.SIGNAL('clicked()'), self.onClicked)
         ############################################
 
-
         ############### Commutators ################
-                ####### Slots-Signals #######
+        ####### Slots-Signals #######
         # # создадим поток
         # self.thread = QtCore.QThread()
         # # создадим объект для выполнения кода в другом потоке
@@ -121,12 +125,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.thread.started.connect(self.ui_handler.run)
         # # запустим поток
         # self.thread.start()
-                #############################
-                ########### Naive ###########
+        #############################
+        ########### Naive ###########
         self.sock_listener = SocketListener(self)
         self.sock_listener.start()
-                #############################
+        #############################
         ############################################
+
+    def loadSettings(self):
+        self.DatasetPath_LE.setText(self.settings.value("datasetPath", "C:/", type=str))
+        self.ModelPath_LE.setText(self.settings.value("modelsPath", "C:/", type=str))
+        self.Labels_LE.setText(self.settings.value("labelPath", "C:/", type=str))
+        self.PlotsPath_LE.setText(self.settings.value("plotPath", "C:/", type=str))
 
     ################## Listener`s methods ###############
     ####### Buttons ########
@@ -140,20 +150,41 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         pass
 
     def datasetPath_TB_Click(self):
-        dirlist = QFileDialog.getExistingDirectory(self, "Get Dataset folder", ".")
-        self.DatasetPath_LE.setText(dirlist)
+        # при нажатии на отмену валится
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Dataset folder", self.settings.value("datasetPath", "C:/", type=str))
+        if dirlist == "":
+            self.DatasetPath_LE.setText(self.settings.value("datasetPath", "C:/", type=str))
+        else:
+            self.DatasetPath_LE.setText(dirlist)
+            self.settings.setValue("datasetPath", dirlist)
+            self.settings.sync()
 
     def modelsPath_TB_Click(self):
-        dirlist = QFileDialog.getExistingDirectory(self, "Get Models folder", ".")
-        self.ModelPath_LE.setText(dirlist)
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Models folder", self.settings.value("modelsPath", "C:/", type=str))
+        if dirlist == "":
+            self.ModelPath_LE.setText(self.settings.value("modelsPath", "C:/", type=str))
+        else:
+            self.ModelPath_LE.setText(dirlist)
+            self.settings.setValue("modelsPath", dirlist)
+            self.settings.sync()
 
     def labelPath_TB_Click(self):
-        dirlist = QFileDialog.getExistingDirectory(self, "Get Labels folder", ".")
-        self.Labels_LE.setText(dirlist)
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Labels folder", self.settings.value("labelPath", "C:/", type=str))
+        if dirlist == "":
+            self.Labels_LE.setText(self.settings.value("labelPath", "C:/", type=str))
+        else:
+            self.Labels_LE.setText(dirlist)
+            self.settings.setValue("labelPath", dirlist)
+            self.settings.sync()
 
     def plotPath_TB_Click(self):
-        dirlist = QFileDialog.getExistingDirectory(self, "Get Plots folder", ".")
-        self.PlotsPath_LE.setText(dirlist)
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Plots folder", self.settings.value("plotPath", "C:/", type=str))
+        if dirlist == "":
+            self.PlotsPath_LE.setText(self.settings.value("plotPath", "C:/", type=str))
+        else:
+            self.PlotsPath_LE.setText(dirlist)
+            self.settings.setValue("plotPath", dirlist)
+            self.settings.sync()
 
     def modelCheckpoint_TB_Click(self):
         pass
@@ -186,11 +217,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         pass
 
         ###### Slots ##########
+
     @QtCore.pyqtSlot(str, object)
     def refresh_UI(self, data: dict):
         if data.get("codeword") == "geneticOutput_TE":
             self.mainwindow.geneticOutput_TE.append(data.get("data"))
-
 
         #######################
         ###### Comboboxes #####
@@ -300,15 +331,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 class UIHandler(QtCore.QObject):
-    signal = QtCore.pyqtSignal(str, object)
+    # signal = QtCore.pyqtSignal(str, object)
 
     def __init__(self):
         super().__init__()
-        #QtCore.QObject.__init__(self)
+        # QtCore.QObject.__init__(self)
         self.sock = socket.socket()
         self.sock.bind(('localhost', 12246))
         self.sock.listen(1)
-        #self.signal = QtCore.pyqtSignal(str, object)
+        self.signal = QtCore.pyqtSignal(str, object)
 
     def run(self):
         conn, addr = self.sock.accept()
@@ -318,12 +349,13 @@ class UIHandler(QtCore.QObject):
                 continue
             data = eval(data)
             if data.get("codeword") == "geneticOutput_TE":
-                #signal.emit
-                #self.mainwindow.geneticOutput_TE.append(data.get("data"))
-                #self.signal.emit()
+                # signal.emit
+                # self.mainwindow.geneticOutput_TE.append(data.get("data"))
+                # self.signal.emit()
+
                 pass
             elif data.get("codeword") == "chrOutput_TE":
-                #self.mainwindow.chrOutput_TE.append(data.get("data"))
+                # self.mainwindow.chrOutput_TE.append(data.get("data"))
                 pass
             # посылаем сигнал из второго потока в GUI поток
             #            self.newTextAndColor.emit(
@@ -384,6 +416,10 @@ class QueueProgramThread(Thread):
 if __name__ == '__main__':
     # Новый экземпляр QApplication
     # app = QtWidgets.QApplication(sys.argv)
+    QCoreApplication.setOrganizationName("QSoft")
+    # QCoreApplication.setOrganizationDomain("Settings")
+    QCoreApplication.setApplicationName("NN Family Creater")
+
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
     # app.setStyle('windowsvista')

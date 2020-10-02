@@ -1,5 +1,7 @@
 # импортируем бэкенд Agg из matplotlib для сохранения графиков на диск
 import sys
+from typing import Dict, Any, Union
+
 import matplotlib
 # подключаем необходимые пакеты
 from sklearn.preprocessing import LabelBinarizer
@@ -19,7 +21,10 @@ import random
 import pickle
 import cv2
 import os
+
+
 import socket
+import json
 
 from Chromosomes.C2dChromosome import C2dChromosome
 from ChromosomeParams import ChromosomeParams
@@ -140,20 +145,29 @@ class VGG:
         # оцениваем нейросеть
         print("[INFO] evaluating network...")
         predictions = model.predict(testX, batch_size=self.chr_p.nrp.batchSize)
+
+        # реализовать в виде графиков с переключением по эпохам
         matrix = confusion_matrix(testY.argmax(axis=1), np.argmax(predictions, axis=1))
-        #self.main_window.errorOutput_TE.append(np.array_str(matrix))
-        report = 0
+        # self.main_window.errorOutput_TE.append(np.array_str(matrix))
+
         report = classification_report(testY.argmax(axis=1),
                                        predictions.argmax(axis=1), target_names=lb.classes_, output_dict=True)
 
-
-        if not isinstance(report, dict):
-            raise Exception(str(type(report)))
-        if report == 0:
-            report = {"accuracy": 0}
-        print(report)
-
         # строим графики потерь и точности
+        ######## Data for plotting sending ########
+        plot_data: Dict[str, Union[int, Any]] = {}
+        plot_data["epoch_deJure"] = self.chr_p.nrp.trainEpoch
+        plot_data["epoch_deFacto"] = 0  # доделать
+        plot_data["confusion_matrix"] = matrix
+        plot_data["loss"] = H.history["loss"]
+        plot_data["val_loss"] = H.history["val_loss"]
+        plot_data["acc"] = H.history["acc"]
+        plot_data["val_acc"] = H.history["val_acc"]
+        plot_data = json.dumps(plot_data)
+
+        ###########################################
+
+        # переделать под интерфейс
         N = np.arange(0, self.chr_p.nrp.trainEpoch)
         plt.style.use("ggplot")
         plt.figure()
