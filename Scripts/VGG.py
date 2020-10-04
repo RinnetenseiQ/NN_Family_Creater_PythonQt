@@ -52,6 +52,7 @@ class VGG:
     def loadData(self):
         # инициализируем данные и метки
         print("[INFO] loading images...")
+        self.send("[INFO] loading images...", "chrOutput_TE")
         data = []
         labels = []
         # backend.set_floatx('float16')
@@ -121,6 +122,7 @@ class VGG:
 
     def train(self, model, trainX, trainY, testX, testY):
         print("[INFO] training network...")
+        self.send("[INFO] training network...", "chrOutput_TE")
         lr = self.chromosome.constLR
         # настроить выбор оптимизатора!!
         opt = SGD(lr=lr)
@@ -158,13 +160,13 @@ class VGG:
         plot_data: Dict[str, Union[int, Any]] = {}
         plot_data["epoch_deJure"] = self.chr_p.nrp.trainEpoch
         plot_data["epoch_deFacto"] = 0  # доделать
-        plot_data["confusion_matrix"] = matrix
-        plot_data["loss"] = H.history["loss"]
-        plot_data["val_loss"] = H.history["val_loss"]
-        plot_data["acc"] = H.history["acc"]
-        plot_data["val_acc"] = H.history["val_acc"]
+        plot_data["confusion_matrix"] = matrix.tolist()
+        plot_data["loss"] = str(H.history["loss"])
+        plot_data["val_loss"] = str(H.history["val_loss"])
+        plot_data["acc"] = str(H.history["acc"])
+        plot_data["val_acc"] = str(H.history["val_acc"])
         plot_data = json.dumps(plot_data)
-
+        self.send(plot_data, "chr_plotting")
         ###########################################
 
         # переделать под интерфейс
@@ -213,3 +215,7 @@ class VGG:
         # доделать!!!
         optimizers = self.chr_p.nrp.optimizers
         return SGD(lr=lr)
+
+    def send(self, data, codeword):
+        data = {"codeword": codeword, "data": data}
+        data = json.dumps(data)

@@ -64,7 +64,7 @@ class GeneticProgram:
     def c2dEvolve(self):
         self.population.clear()
         pbValue = 0
-        #self.mainwindow.progressBar.setValue(pbValue)
+        self.send(pbValue, "search_PB")
         pbStep = 100/self.chr_p.genEpoch
 
 
@@ -89,12 +89,10 @@ class GeneticProgram:
         # self.population = sorted(args, key=lambda x: x.address)
         self.population.sort(key=lambda x: x.assessment, reverse=True)
 
-        #self.mainwindow.geneticOutput_TE.append(self.getAssessment())  ##### GUI ######
-        self.send(self.getAssessment(), "geneticOutput_TE")
-        #self.mainwindow.geneticOutput_TE.append("###################################################\n")  ##### GUI ######
-        self.send("###################################################\n", "geneticOutput_TE")
-        # pbValue = pbValue + pbStep ##### GUI ######
-        # self.mainwindow.progressBar.setValue(pbValue) ##### GUI ######
+        self.send(self.getAssessment(), "geneticOutput_TE") ##### GUI ######
+        self.send("###################################################\n", "geneticOutput_TE") ##### GUI ######
+        pbValue = pbValue + pbStep ##### GUI ######
+        self.send(pbValue, "search_PB") ##### GUI ######
 
         ###########################################
 
@@ -132,8 +130,8 @@ class GeneticProgram:
             self.send(self.getAssessment(), "geneticOutput_TE")
             #self.mainwindow.geneticOutput_TE.append("###################################################\n")  ##### GUI ######
             self.send("###################################################\n", "geneticOutput_TE")
-            #pbValue = pbValue + pbStep ##### GUI ######
-            #self.mainwindow.progressBar.setValue(pbValue) ##### GUI ######
+            pbValue = pbValue + pbStep ##### GUI ######
+            self.send(pbValue, "search_PB") ##### GUI ######
         self.send("############################### ENDED!!!! ############################", "geneticOutput_TE")
 
         ########################################################

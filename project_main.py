@@ -391,6 +391,12 @@ class SocketListener(Thread):
                 self.mainwindow.geneticOutput_TE.append(data.get("data"))
             elif data.get("codeword") == "chrOutput_TE":
                 self.mainwindow.chrOutput_TE.append(data.get("data"))
+            elif data.get("codeword") == "chr_plotting":
+                pass
+            elif data.get("codeword") == "search_plotting":
+                pass
+            elif data.get("codeword") == "search_PB":
+                self.mainwindow.progressBar.setValue(data.get("data"))
 
 
 class QueueProgramThread(Thread):
