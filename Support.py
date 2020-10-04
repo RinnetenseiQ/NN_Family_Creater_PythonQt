@@ -1,5 +1,6 @@
 import math
 import os
+import json
 
 
 class Support:
@@ -39,3 +40,8 @@ class Support:
 
         return [copyCount, crossCount, mutateCount]
 
+    def send(data, codeword, socket):
+        data = {"codeword": codeword, "data": data}
+        data = json.dumps(data)
+        data += "&"
+        socket.send(bytes(data, encoding="utf-8"))

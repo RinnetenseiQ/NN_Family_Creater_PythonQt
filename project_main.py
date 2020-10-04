@@ -113,22 +113,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         ############### Commutators ################
         ####### Slots-Signals #######
-        # # создадим поток
-        # self.thread = QtCore.QThread()
-        # # создадим объект для выполнения кода в другом потоке
-        # self.ui_handler = UIHandler()
-        # # перенесём объект в другой поток
-        # self.ui_handler.moveToThread(self.thread)
-        # # после чего подключим все сигналы и слоты
-        # self.ui_handler.signal.connect(self.refresh_UI)
-        # # подключим сигнал старта потока к методу run у объекта, который должен выполнять код в другом потоке
-        # self.thread.started.connect(self.ui_handler.run)
-        # # запустим поток
-        # self.thread.start()
+        # создадим поток
+        self.thread = QtCore.QThread()
+        # создадим объект для выполнения кода в другом потоке
+        self.ui_handler = UIHandler()
+        # перенесём объект в другой поток
+        self.ui_handler.moveToThread(self.thread)
+        # после чего подключим все сигналы и слоты
+        self.ui_handler.signal.connect(self.refresh_UI)
+        #self.ui_handler.signal.
+        # подключим сигнал старта потока к методу run у объекта, который должен выполнять код в другом потоке
+        self.thread.started.connect(self.ui_handler.run)
+        # запустим поток
+        self.thread.start()
         #############################
         ########### Naive ###########
-        self.sock_listener = SocketListener(self)
-        self.sock_listener.start()
+        # self.sock_listener = SocketListener(self)
+        # self.sock_listener.start()
         #############################
         ############################################
 
@@ -218,10 +219,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         ###### Slots ##########
 
-    @QtCore.pyqtSlot(str, object)
+    @QtCore.pyqtSlot(object)
     def refresh_UI(self, data: dict):
         if data.get("codeword") == "geneticOutput_TE":
-            self.mainwindow.geneticOutput_TE.append(data.get("data"))
+            self.geneticOutput_TE.append(data.get("data"))
+        elif data.get("codeword") == "chrOutput_TE":
+            self.chrOutput_TE.append(data.get("data"))
+        elif data.get("codeword") == "chr_plotting":
+            pass
+        elif data.get("codeword") == "search_plotting":
+            pass
+        elif data.get("codeword") == "search_PB":
+            self.progressBar.setValue(data.get("data"))
 
         #######################
         ###### Comboboxes #####
@@ -331,32 +340,44 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 class UIHandler(QtCore.QObject):
-    # signal = QtCore.pyqtSignal(str, object)
+    signal = QtCore.pyqtSignal(object)
 
     def __init__(self):
-        super().__init__()
         # QtCore.QObject.__init__(self)
         self.sock = socket.socket()
         self.sock.bind(('localhost', 12246))
         self.sock.listen(1)
-        self.signal = QtCore.pyqtSignal(str, object)
+        #self.signal = QtCore.pyqtSignal(str, object)
+        super().__init__()
 
     def run(self):
         conn, addr = self.sock.accept()
         while True:
-            data = conn.recv(2048).decode('UTF-8')
+            data = conn.recv(20480).decode('UTF-8')
             if not data:
                 continue
-            data = eval(data)
-            if data.get("codeword") == "geneticOutput_TE":
-                # signal.emit
-                # self.mainwindow.geneticOutput_TE.append(data.get("data"))
-                # self.signal.emit()
-
-                pass
-            elif data.get("codeword") == "chrOutput_TE":
-                # self.mainwindow.chrOutput_TE.append(data.get("data"))
-                pass
+            datalist = data.split('&')
+            if datalist[-1] == "": datalist.pop()
+            for data in datalist:
+                data = eval(data)
+                self.signal.emit(data)
+                # if data.get("codeword") == "geneticOutput_TE":
+                #     #self.mainwindow.geneticOutput_TE.append(data.get("data"))
+                #     #time.sleep(0.1)
+                #     #self.mainwindow.geneticOutput_TE.verticalScrollBar().setValue(
+                #         #self.mainwindow.geneticOutput_TE.verticalScrollBar().maximum())
+                #     self.signal.emit(data)
+                #     pass
+                # elif data.get("codeword") == "chrOutput_TE":
+                #     #self.mainwindow.chrOutput_TE.append(data.get("data"))
+                #     pass
+                # elif data.get("codeword") == "chr_plotting":
+                #     pass
+                # elif data.get("codeword") == "search_plotting":
+                #     pass
+                # elif data.get("codeword") == "search_PB":
+                #     #self.mainwindow.progressBar.setValue(data.get("data"))
+                #     pass
             # посылаем сигнал из второго потока в GUI поток
             #            self.newTextAndColor.emit(
             #                '{} - thread 2 variant 1.\n'.format(str(time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime()))),
@@ -383,20 +404,26 @@ class SocketListener(Thread):
     def run(self) -> None:
         conn, addr = self.sock.accept()
         while True:
-            data = conn.recv(2048).decode('UTF-8')
+            data = conn.recv(20480).decode('UTF-8')
             if not data:
                 continue
-            data = eval(data)
-            if data.get("codeword") == "geneticOutput_TE":
-                self.mainwindow.geneticOutput_TE.append(data.get("data"))
-            elif data.get("codeword") == "chrOutput_TE":
-                self.mainwindow.chrOutput_TE.append(data.get("data"))
-            elif data.get("codeword") == "chr_plotting":
-                pass
-            elif data.get("codeword") == "search_plotting":
-                pass
-            elif data.get("codeword") == "search_PB":
-                self.mainwindow.progressBar.setValue(data.get("data"))
+            datalist = data.split('}')
+            datalist.pop()
+            for data in datalist:
+                data = eval(data + "}")
+                if data.get("codeword") == "geneticOutput_TE":
+                    self.mainwindow.geneticOutput_TE.append(data.get("data"))
+                    time.sleep(0.1)
+                    self.mainwindow.geneticOutput_TE.verticalScrollBar().setValue(
+                        self.mainwindow.geneticOutput_TE.verticalScrollBar().maximum())
+                elif data.get("codeword") == "chrOutput_TE":
+                    self.mainwindow.chrOutput_TE.append(data.get("data"))
+                elif data.get("codeword") == "chr_plotting":
+                    pass
+                elif data.get("codeword") == "search_plotting":
+                    pass
+                elif data.get("codeword") == "search_PB":
+                    self.mainwindow.progressBar.setValue(data.get("data"))
 
 
 class QueueProgramThread(Thread):

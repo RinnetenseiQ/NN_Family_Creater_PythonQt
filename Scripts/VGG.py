@@ -1,5 +1,4 @@
 # импортируем бэкенд Agg из matplotlib для сохранения графиков на диск
-import sys
 from typing import Dict, Any, Union
 
 import matplotlib
@@ -29,6 +28,7 @@ import json
 from Chromosomes.C2dChromosome import C2dChromosome
 from ChromosomeParams import ChromosomeParams
 from Callbacks.FitLogger import FitLogger
+from Support import Support
 
 matplotlib.use("Agg")
 
@@ -52,7 +52,7 @@ class VGG:
     def loadData(self):
         # инициализируем данные и метки
         print("[INFO] loading images...")
-        self.send("[INFO] loading images...", "chrOutput_TE")
+        Support.send("[INFO] loading images...", "chrOutput_TE", self.sock)
         data = []
         labels = []
         # backend.set_floatx('float16')
@@ -122,7 +122,7 @@ class VGG:
 
     def train(self, model, trainX, trainY, testX, testY):
         print("[INFO] training network...")
-        self.send("[INFO] training network...", "chrOutput_TE")
+        Support.send("[INFO] training network...", "chrOutput_TE", self.sock)
         lr = self.chromosome.constLR
         # настроить выбор оптимизатора!!
         opt = SGD(lr=lr)
@@ -154,6 +154,8 @@ class VGG:
 
         report = classification_report(testY.argmax(axis=1),
                                        predictions.argmax(axis=1), target_names=lb.classes_, output_dict=True)
+        print(classification_report(testY.argmax(axis=1),
+                                       predictions.argmax(axis=1), target_names=lb.classes_, output_dict=False))
 
         # строим графики потерь и точности
         ######## Data for plotting sending ########
@@ -166,7 +168,7 @@ class VGG:
         plot_data["acc"] = str(H.history["acc"])
         plot_data["val_acc"] = str(H.history["val_acc"])
         plot_data = json.dumps(plot_data)
-        self.send(plot_data, "chr_plotting")
+        Support.send(plot_data, "chr_plotting", self.sock)
         ###########################################
 
         # переделать под интерфейс
@@ -182,6 +184,7 @@ class VGG:
         plt.ylabel("Loss/Accuracy")
         plt.legend()
         plt.savefig(self.chr_p.nrp.plotPath + "\\temp_plot.png")
+        plt.close('all')
 
         # варианты вместо model.summary()
         # model.count_params()  #1
@@ -199,9 +202,9 @@ class VGG:
         # сохраняем модель и бинаризатор меток на диск
         print("[INFO] serializing network and label binarizer...")
         model.save(self.chr_p.nrp.modelPath + "\\temp_model")
-        f = open(self.chr_p.nrp.labelPath + "\\temp_label", "wb")
-        f.write(pickle.dumps(lb))
-        f.close()
+        with open(self.chr_p.nrp.labelPath + "\\temp_label", "wb") as f:
+        #f = open(self.chr_p.nrp.labelPath + "\\temp_label", "wb")
+            f.write(pickle.dumps(lb))
 
     def getActivation(self, mode, i) -> int:
         # подходитЬ не для всех
@@ -216,6 +219,3 @@ class VGG:
         optimizers = self.chr_p.nrp.optimizers
         return SGD(lr=lr)
 
-    def send(self, data, codeword):
-        data = {"codeword": codeword, "data": data}
-        data = json.dumps(data)

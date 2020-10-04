@@ -1,6 +1,7 @@
 from tensorflow.keras.callbacks import Callback
 import socket
 import json
+from Support import Support
 
 
 # from project_main import MainWindow
@@ -12,16 +13,11 @@ class FitLogger(Callback):
         super().__init__()
         self.sock = sock
 
-    def send(self, data, codeword):
-        data = {"codeword": codeword, "data": data}
-        data = json.dumps(data)
-        self.sock.send(data.encode("UTF-8"))
-
     def on_train_begin(self, logs=None):
         # keys = list(logs.keys())
         # print("Starting training; got log keys: {}".format(keys))
         # self.main_window.chrOutput_TE.append("train beginning \n")
-        self.send("train beginning \n", "chrOutput_TE")
+        Support.send("train beginning \n", "chrOutput_TE", self.sock)
         pass
 
     def on_train_end(self, logs=None):
@@ -49,7 +45,7 @@ class FitLogger(Callback):
         pass
 
     def on_train_batch_end(self, batch, logs=None):
-        self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]), "chrOutput_TE")
+        Support.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]), "chrOutput_TE", self.sock)
         # if batch == 0:
         #     #self.main_window.chrOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
         #     self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]), "chrOutput_TE")
