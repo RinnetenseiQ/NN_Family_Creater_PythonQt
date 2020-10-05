@@ -52,7 +52,7 @@ class VGG:
     def loadData(self):
         # инициализируем данные и метки
         print("[INFO] loading images...")
-        Support.send("[INFO] loading images...", "chrOutput_TE", self.sock)
+        Support.send("chrOutput_TE", "appendText", "[INFO] loading images...", self.sock)
         data = []
         labels = []
         # backend.set_floatx('float16')
@@ -122,7 +122,7 @@ class VGG:
 
     def train(self, model, trainX, trainY, testX, testY):
         print("[INFO] training network...")
-        Support.send("[INFO] training network...", "chrOutput_TE", self.sock)
+        Support.send("chrOutput_TE", "appendText", "[INFO] training network...", self.sock)
         lr = self.chromosome.constLR
         # настроить выбор оптимизатора!!
         opt = SGD(lr=lr)
@@ -168,7 +168,7 @@ class VGG:
         plot_data["acc"] = str(H.history["acc"])
         plot_data["val_acc"] = str(H.history["val_acc"])
         plot_data = json.dumps(plot_data)
-        Support.send(plot_data, "chr_plotting", self.sock)
+        Support.send("chr_plotting", "plot", plot_data, self.sock)
         ###########################################
 
         # переделать под интерфейс

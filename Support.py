@@ -1,7 +1,7 @@
 import math
 import os
 import json
-
+from typing import Any
 
 class Support:
     def getPow2(x):
@@ -40,8 +40,8 @@ class Support:
 
         return [copyCount, crossCount, mutateCount]
 
-    def send(data, codeword, socket):
-        data = {"codeword": codeword, "data": data}
+    def send(target: str, action: str, data: Any,  socket):
+        data = {"target": target, "action": action, "data": data}
         data = json.dumps(data)
         data += "&"
         socket.send(bytes(data, encoding="utf-8"))

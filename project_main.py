@@ -1,4 +1,5 @@
 # from PySide2 import QtWidgets
+import numpy as np
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5.QtCore import QCoreApplication, QSettings
@@ -7,6 +8,7 @@ import sys
 import json
 
 from PyQt5.QtWidgets import QFileDialog
+from PyQt5 import QtGui
 
 from NetworkRandomParams import NetworkRandomParams
 from ChromosomeParams import ChromosomeParams
@@ -19,6 +21,10 @@ from threading import Thread
 import socket
 from multiprocessing import Process
 import time
+
+from MPL_Canvas import MyMplCanvas
+from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as Toolbar
+import matplotlib.pyplot as plt
 
 from pycallgraph import PyCallGraph
 from pycallgraph.output import GraphvizOutput
@@ -50,6 +56,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.equal = ""
 
         self.paramsQueue = deque([])
+        queue_program_thread = QueueProgramThread(self.paramsQueue, self)
+        queue_program_thread.start()
 
         ############## Widgets Init #################
         self.errorOutput_TE.setVisible(False)
@@ -73,6 +81,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.optimisingAlgMode_CB.addItem("Immune")
         self.optimisingAlgMode_CB.addItem("по Ивахненко")
         self.progressBar.setValue(0)
+
+        x = np.arange(0, 5, 0.1)
+        y = np.sin(x)
+        self.figure = plt.figure()
+        self.ax1 = plt.subplot(111)
+        self.ax1 = plt.plot(x, y)
+
+        self.lineUpping = QtWidgets.QVBoxLayout(self.widget)
+        self.canvas = MyMplCanvas(self.figure)
+        self.lineUpping.addWidget(self.canvas)
+        self.toolbar = Toolbar(self.canvas, self)
+        self.lineUpping.addWidget(self.toolbar)
         ###### Experiments ######
         self.lf_CCE_ChB.setChecked(True)
 
@@ -121,7 +141,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ui_handler.moveToThread(self.thread)
         # после чего подключим все сигналы и слоты
         self.ui_handler.signal.connect(self.refresh_UI)
-        #self.ui_handler.signal.
+        # self.ui_handler.signal.
         # подключим сигнал старта потока к методу run у объекта, который должен выполнять код в другом потоке
         self.thread.started.connect(self.ui_handler.run)
         # запустим поток
@@ -143,16 +163,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     ####### Buttons ########
     def search_Btn_Click(self):
         self.paramsQueue.append(self.collectGUIParams())
-        if self.queue_program_thread is None or not self.queue_program_thread.is_alive():
-            queue_program_thread = QueueProgramThread(self.paramsQueue, self)
-            queue_program_thread.start()
+        # threads = [t for t in threads if t.is_alive()]
+        threads = []
+        # if len(threads) == 0:
+        #     queue_program_thread = QueueProgramThread(self.paramsQueue, self)
+        #     queue_program_thread.start()
+        #     threads.append(queue_program_thread)
+        # if (self.queue_program_thread is None) or not (self.queue_program_thread.is_alive()):
+        #     queue_program_thread = QueueProgramThread(self.paramsQueue, self)
+        #     queue_program_thread.start()
 
     def train_Btn_Click(self):
         pass
 
     def datasetPath_TB_Click(self):
         # при нажатии на отмену валится
-        dirlist = QFileDialog.getExistingDirectory(self, "Get Dataset folder", self.settings.value("datasetPath", "C:/", type=str))
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Dataset folder",
+                                                   self.settings.value("datasetPath", "C:/", type=str))
         if dirlist == "":
             self.DatasetPath_LE.setText(self.settings.value("datasetPath", "C:/", type=str))
         else:
@@ -161,7 +188,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.settings.sync()
 
     def modelsPath_TB_Click(self):
-        dirlist = QFileDialog.getExistingDirectory(self, "Get Models folder", self.settings.value("modelsPath", "C:/", type=str))
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Models folder",
+                                                   self.settings.value("modelsPath", "C:/", type=str))
         if dirlist == "":
             self.ModelPath_LE.setText(self.settings.value("modelsPath", "C:/", type=str))
         else:
@@ -170,7 +198,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.settings.sync()
 
     def labelPath_TB_Click(self):
-        dirlist = QFileDialog.getExistingDirectory(self, "Get Labels folder", self.settings.value("labelPath", "C:/", type=str))
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Labels folder",
+                                                   self.settings.value("labelPath", "C:/", type=str))
         if dirlist == "":
             self.Labels_LE.setText(self.settings.value("labelPath", "C:/", type=str))
         else:
@@ -179,7 +208,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.settings.sync()
 
     def plotPath_TB_Click(self):
-        dirlist = QFileDialog.getExistingDirectory(self, "Get Plots folder", self.settings.value("plotPath", "C:/", type=str))
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Plots folder",
+                                                   self.settings.value("plotPath", "C:/", type=str))
         if dirlist == "":
             self.PlotsPath_LE.setText(self.settings.value("plotPath", "C:/", type=str))
         else:
@@ -221,16 +251,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     @QtCore.pyqtSlot(object)
     def refresh_UI(self, data: dict):
-        if data.get("codeword") == "geneticOutput_TE":
-            self.geneticOutput_TE.append(data.get("data"))
-        elif data.get("codeword") == "chrOutput_TE":
-            self.chrOutput_TE.append(data.get("data"))
-        elif data.get("codeword") == "chr_plotting":
+        if data.get("target") == "geneticOutput_TE":
+            if data.get("action") == "appendText":
+                self.geneticOutput_TE.append(data.get("data"))
+            elif data.get("action") == "clear":
+                self.geneticOutput_TE.clear()
+        elif data.get("target") == "chrOutput_TE":
+            if data.get("action") == "appendText":
+                self.chrOutput_TE.append(data.get("data"))
+            elif data.get("action") == "clear":
+                self.chrOutput_TE.clear()
+        elif data.get("target") == "chr_plotting":
             pass
-        elif data.get("codeword") == "search_plotting":
+        elif data.get("target") == "search_plotting":
             pass
-        elif data.get("codeword") == "search_PB":
-            self.progressBar.setValue(data.get("data"))
+        elif data.get("target") == "search_PB":
+            if data.get("action") == "setValue":
+                self.progressBar.setValue(data.get("data"))
 
         #######################
         ###### Comboboxes #####
@@ -347,7 +384,7 @@ class UIHandler(QtCore.QObject):
         self.sock = socket.socket()
         self.sock.bind(('localhost', 12246))
         self.sock.listen(1)
-        #self.signal = QtCore.pyqtSignal(str, object)
+        # self.signal = QtCore.pyqtSignal(str, object)
         super().__init__()
 
     def run(self):
@@ -361,35 +398,6 @@ class UIHandler(QtCore.QObject):
             for data in datalist:
                 data = eval(data)
                 self.signal.emit(data)
-                # if data.get("codeword") == "geneticOutput_TE":
-                #     #self.mainwindow.geneticOutput_TE.append(data.get("data"))
-                #     #time.sleep(0.1)
-                #     #self.mainwindow.geneticOutput_TE.verticalScrollBar().setValue(
-                #         #self.mainwindow.geneticOutput_TE.verticalScrollBar().maximum())
-                #     self.signal.emit(data)
-                #     pass
-                # elif data.get("codeword") == "chrOutput_TE":
-                #     #self.mainwindow.chrOutput_TE.append(data.get("data"))
-                #     pass
-                # elif data.get("codeword") == "chr_plotting":
-                #     pass
-                # elif data.get("codeword") == "search_plotting":
-                #     pass
-                # elif data.get("codeword") == "search_PB":
-                #     #self.mainwindow.progressBar.setValue(data.get("data"))
-                #     pass
-            # посылаем сигнал из второго потока в GUI поток
-            #            self.newTextAndColor.emit(
-            #                '{} - thread 2 variant 1.\n'.format(str(time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime()))),
-            #                QColor(0, 0, 255)
-            #            )
-            #        QtCore.QThread.msleep(1000)
-
-            # посылаем сигнал из второго потока в GUI поток
-            # self.newTextAndColor.emit(
-            #     '{} - thread 2 variant 2.\n'.format(str(time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime()))),
-            #     QColor(255, 0, 0)
-            # )
             QtCore.QThread.msleep(1000)
 
 
@@ -428,22 +436,28 @@ class SocketListener(Thread):
 
 class QueueProgramThread(Thread):
     def __init__(self, chr_q: deque, main_window: MainWindow):
+        super().__init__()
         self.chromosome_params_queue = chr_q
         self.main_window = main_window
-        Thread.__init__(self)
 
     def run(self):
-        while len(self.chromosome_params_queue) > 0:
-            chromosome_params = self.chromosome_params_queue.popleft()
-            # genetic_program_process = GeneticProgramProcess(chromosome_params, self.main_window)
-            # genetic_program_process.start()
-            prog = GeneticProgramProcess(chromosome_params)
-            prog.run()
-            # proc = Process(target=prog.startGeneticSearch())
-            # proc.start()
-            # proc.join()
-            # while genetic_program_process.is_alive():
-            #    time.sleep(2)
+
+        # while len(self.chromosome_params_queue) > 0:
+        while True:
+            if len(self.chromosome_params_queue) != 0:
+                chromosome_params = self.chromosome_params_queue.popleft()
+                # genetic_program_process = GeneticProgramProcess(chromosome_params, self.main_window)
+                # genetic_program_process.start()
+
+                prog = GeneticProgramProcess(chromosome_params)
+                prog.run()
+                #prog.
+
+                # proc = Process(target=prog.startGeneticSearch())
+                # proc.start()
+                # proc.join()
+                # while genetic_program_process.is_alive():
+                #    time.sleep(2)
 
 
 if __name__ == '__main__':

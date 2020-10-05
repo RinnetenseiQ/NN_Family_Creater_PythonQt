@@ -17,7 +17,7 @@ class FitLogger(Callback):
         # keys = list(logs.keys())
         # print("Starting training; got log keys: {}".format(keys))
         # self.main_window.chrOutput_TE.append("train beginning \n")
-        Support.send("train beginning \n", "chrOutput_TE", self.sock)
+        Support.send("chrOutput_TE", "appendText", "train beginning \n", self.sock)
         pass
 
     def on_train_end(self, logs=None):
@@ -45,7 +45,7 @@ class FitLogger(Callback):
         pass
 
     def on_train_batch_end(self, batch, logs=None):
-        Support.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]), "chrOutput_TE", self.sock)
+        Support.send("chrOutput_TE", "appendText", "For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]), self.sock)
         # if batch == 0:
         #     #self.main_window.chrOutput_TE.append("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]))
         #     self.send("For batch {}, loss is {:7.2f}.".format(batch, logs["loss"]), "chrOutput_TE")
