@@ -397,7 +397,14 @@ class UIHandler(QtCore.QObject):
             if datalist[-1] == "": datalist.pop()
             for data in datalist:
                 data = eval(data)
-                self.signal.emit(data)
+                if data.get("action") == "reconnect":
+                    # self.sock = socket.socket()
+                    # self.sock.bind(('localhost', 12246))
+                    # self.sock.listen(1)
+                    conn, addr = self.sock.accept()
+                    pass
+                else:
+                    self.signal.emit(data)
             QtCore.QThread.msleep(1000)
 
 

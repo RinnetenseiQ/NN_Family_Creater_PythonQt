@@ -127,6 +127,7 @@ class GeneticProgram:
             pbValue = pbValue + pbStep ##### GUI ######
             Support.send("search_PB", "setValue", pbValue, self.sock) ##### GUI ######
         Support.send( "geneticOutput_TE", "appendText", "############################### ENDED!!!! ############################", self.sock)
+        Support.send("target", "reconnect", "data", self.sock)
 
         ########################################################
 
