@@ -159,16 +159,29 @@ class VGG:
 
         # строим графики потерь и точности
         ######## Data for plotting sending ########
+        loss = np.array(H.history["loss"]).tolist()
+        val_loss = np.array(H.history["val_loss"]).tolist()
+        acc = np.array(H.history["acc"]).tolist()
+        val_acc = np.array(H.history["val_acc"]).tolist()
+
         plot_data: Dict[str, Union[int, Any]] = {}
         plot_data["epoch_deJure"] = self.chr_p.nrp.trainEpoch
-        plot_data["epoch_deFacto"] = 0  # доделать
+        plot_data["epoch_deFacto"] = self.chr_p.nrp.trainEpoch  # доделать
         plot_data["confusion_matrix"] = matrix.tolist()
-        plot_data["loss"] = str(H.history["loss"])
-        plot_data["val_loss"] = str(H.history["val_loss"])
-        plot_data["acc"] = str(H.history["acc"])
-        plot_data["val_acc"] = str(H.history["val_acc"])
+        plot_data["loss"] = loss
+        plot_data["val_loss"] = val_loss
+        plot_data["acc"] = acc
+        plot_data["val_acc"] = val_acc
+        # plot_data["loss"] = H.history["loss"]
+        # plot_data["val_loss"] = H.history["val_loss"]
+        # plot_data["acc"] = H.history["acc"]
+        # plot_data["val_acc"] = H.history["val_acc"]
         plot_data = json.dumps(plot_data)
-        Support.send("chr_plotting", "plot", plot_data, self.sock)
+
+
+
+
+        Support.send("plot_ui", "chr_plotting", plot_data, self.sock)
         ###########################################
 
         # переделать под интерфейс

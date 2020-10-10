@@ -25,7 +25,7 @@ import time
 from MPL_Canvas import MyMplCanvas
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as Toolbar
 import matplotlib.pyplot as plt
-
+from Forms.plot_ui import PlotWindow
 from pycallgraph import PyCallGraph
 from pycallgraph.output import GraphvizOutput
 
@@ -118,6 +118,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lambda_TB.clicked.connect(self.lambda_TB_Click)
         self.CSVLogger_TB.clicked.connect(self.CSVLogger_TB_Click)
         self.ProgbarLogger_TB.clicked.connect(self.progbarLogger_TB_Click)
+        self.plotsShow_Btn.clicked.connect(self.plotShow_Btn_Click)
 
         ####### ComboBoxes ###
         # self.coutMode_CB.currentIndexChanged.connect(self.coutMode_CB_SelectedIndexChanged)
@@ -141,6 +142,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ui_handler.moveToThread(self.thread)
         # после чего подключим все сигналы и слоты
         self.ui_handler.signal.connect(self.refresh_UI)
+        self.plot_ui = PlotWindow()
+        self.ui_handler.plot_signal.connect(self.plot_ui.refreshFigure)
         # self.ui_handler.signal.
         # подключим сигнал старта потока к методу run у объекта, который должен выполнять код в другом потоке
         self.thread.started.connect(self.ui_handler.run)
@@ -151,7 +154,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.sock_listener = SocketListener(self)
         # self.sock_listener.start()
         #############################
+
         ############################################
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        # тут нужно спросить подтверждение и убить всех детей
+        self.close()
 
     def loadSettings(self):
         self.DatasetPath_LE.setText(self.settings.value("datasetPath", "C:/", type=str))
@@ -216,6 +224,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.PlotsPath_LE.setText(dirlist)
             self.settings.setValue("plotPath", dirlist)
             self.settings.sync()
+
+    def plotShow_Btn_Click(self):
+        self.plot_ui.show()
+        pass
 
     def modelCheckpoint_TB_Click(self):
         pass
@@ -378,13 +390,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 class UIHandler(QtCore.QObject):
     signal = QtCore.pyqtSignal(object)
+    plot_signal = QtCore.pyqtSignal(object)
 
     def __init__(self):
-        # QtCore.QObject.__init__(self)
         self.sock = socket.socket()
         self.sock.bind(('localhost', 12246))
         self.sock.listen(1)
-        # self.signal = QtCore.pyqtSignal(str, object)
         super().__init__()
 
     def run(self):
@@ -396,13 +407,13 @@ class UIHandler(QtCore.QObject):
             datalist = data.split('&')
             if datalist[-1] == "": datalist.pop()
             for data in datalist:
-                data = eval(data)
+                #data = eval(data)
+                data = json.loads(data)
                 if data.get("action") == "reconnect":
-                    # self.sock = socket.socket()
-                    # self.sock.bind(('localhost', 12246))
-                    # self.sock.listen(1)
                     conn, addr = self.sock.accept()
                     pass
+                elif data.get("target") == "plot_ui":
+                    self.plot_signal.emit(data)
                 else:
                     self.signal.emit(data)
             QtCore.QThread.msleep(1000)

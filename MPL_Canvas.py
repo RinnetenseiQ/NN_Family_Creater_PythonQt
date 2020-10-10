@@ -2,7 +2,6 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as qtCanvas
 from PyQt5.QtWidgets import QSizePolicy
 
 
-
 class MyMplCanvas(qtCanvas):
     def __init__(self, figure):
         self.figure = figure
