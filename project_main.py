@@ -7,7 +7,7 @@ from PyQt5.QtCore import QCoreApplication, QSettings
 import sys
 import json
 
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, qApp
 from PyQt5 import QtGui
 
 from NetworkRandomParams import NetworkRandomParams
@@ -123,13 +123,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ####### ComboBoxes ###
         # self.coutMode_CB.currentIndexChanged.connect(self.coutMode_CB_SelectedIndexChanged)
         self.coutMode_CB.activated.connect(self.coutMode_CB_SelectedIndexChanged)
-        # self.coutMode_CB.highlighted.connect(self.coutMode_CB_SelectedIndexChanged)
-
-        # button.pressed.connect(self.process)
-        # self.search_Btn.clicked.connect(lambda: self.search_Btn_Click())
-        # QtCore.QObject.connect(self.search_Btn, QtCore.PYQT_SIGNAL('clicked'), self.search_Btn_Click)
-        # QtCore.QObject.connectNotify(self.search_Btn, QtCore.PYQT_SIGNAL('clicked'))
-        # QtCore.QObject.connect(button, QtCore.SIGNAL('clicked()'), self.onClicked)
         ############################################
 
         ############### Commutators ################
@@ -159,7 +152,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         # тут нужно спросить подтверждение и убить всех детей
-        self.close()
+        qApp.quit()
+        #self.close()
 
     def loadSettings(self):
         self.DatasetPath_LE.setText(self.settings.value("datasetPath", "C:/", type=str))
@@ -171,15 +165,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     ####### Buttons ########
     def search_Btn_Click(self):
         self.paramsQueue.append(self.collectGUIParams())
-        # threads = [t for t in threads if t.is_alive()]
-        threads = []
-        # if len(threads) == 0:
-        #     queue_program_thread = QueueProgramThread(self.paramsQueue, self)
-        #     queue_program_thread.start()
-        #     threads.append(queue_program_thread)
-        # if (self.queue_program_thread is None) or not (self.queue_program_thread.is_alive()):
-        #     queue_program_thread = QueueProgramThread(self.paramsQueue, self)
-        #     queue_program_thread.start()
 
     def train_Btn_Click(self):
         pass
@@ -459,23 +444,16 @@ class QueueProgramThread(Thread):
         self.main_window = main_window
 
     def run(self):
-
         # while len(self.chromosome_params_queue) > 0:
         while True:
             if len(self.chromosome_params_queue) != 0:
                 chromosome_params = self.chromosome_params_queue.popleft()
-                # genetic_program_process = GeneticProgramProcess(chromosome_params, self.main_window)
-                # genetic_program_process.start()
-
                 prog = GeneticProgramProcess(chromosome_params)
                 prog.run()
-                #prog.
+                # процесс стопит поток или нет? Yes
+            else: time.sleep(1)
 
-                # proc = Process(target=prog.startGeneticSearch())
-                # proc.start()
-                # proc.join()
-                # while genetic_program_process.is_alive():
-                #    time.sleep(2)
+
 
 
 if __name__ == '__main__':

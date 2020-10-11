@@ -32,26 +32,32 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ax1.set_ylabel("Assessments")
         ###########################
 
-        ########## 1 Ax ##########
+        ########## 2 Ax ##########
         self.ax2 = plt.subplot2grid(egrid, (0, 1))
+        self.ax2.set_title("Accuracy - Epoch")
+        self.ax2.set_xlabel("Epoch #")
+        self.ax2.set_ylabel("Accuracy")
         ###########################
 
-        ########## 1 Ax ##########
+        ########## 3 Ax ##########
         self.ax3 = plt.subplot2grid(egrid, (0, 2))
+        self.ax3.set_title("Accuracy - Params")
+        self.ax3.set_xlabel("Params")
+        self.ax3.set_ylabel("Accuracy")
         ###########################
 
-        ########## 1 Ax ##########
+        ########## 4 Ax ##########
         self.ax4 = plt.subplot2grid(egrid, (1, 0))
         self.ax4.set_title("Training Loss and Accuracy (CNN)")
         self.ax4.set_xlabel("Epoch #")
         self.ax4.set_ylabel("Loss/Accuracy")
         ###########################
 
-        ########## 1 Ax ##########
+        ########## 5 Ax ##########
         self.ax5 = plt.subplot2grid(egrid, (1, 1))
         ###########################
 
-        ########## 1 Ax ##########
+        ########## 6 Ax ##########
         self.ax6 = plt.subplot2grid(egrid, (1, 2))
         ###########################
 
