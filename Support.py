@@ -5,7 +5,8 @@ from typing import Any
 
 class Support:
     def getPow2(x):
-        return math.ceil(math.log(x, 2))
+        #return math.ceil(math.log(x, 2))
+        return round(math.log(x, 2))
 
     def getOutputNumb(path: str):
         return len(os.listdir(path))  #???

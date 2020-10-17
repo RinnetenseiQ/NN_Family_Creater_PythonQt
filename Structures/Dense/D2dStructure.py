@@ -31,7 +31,10 @@ class D2dStructure:
         powIndex = 0
         for i in range(self.layersNumb):
             if i == 0:
-                powIndex = self.sr.randrange(Support.getPow2(self.nrp.outputNumb), d2d_rp.firstNeuronsRange)
+                logOutput = Support.getPow2(self.nrp.outputNumb)
+                if logOutput > self.d2d_rp.firstNeuronsRange[0]:
+                    powIndex = self.sr.randrange(logOutput, d2d_rp.firstNeuronsRange[1]+1)
+                else: powIndex = self.sr.randrange(self.d2d_rp.firstNeuronsRange[0], d2d_rp.firstNeuronsRange[1]+1)
             else:
                 powIndex += self.sr.randrange(2)
             neurons = math.pow(2, powIndex)
@@ -83,7 +86,7 @@ class D2dStructure:
             if index != (len(self.layers) - 1):
                 powIndex = Support.getPow2(self.layers[index + 1].neurons)
             else:
-                powIndex = self.sr.randrange(self.d2d_rp.firstNeuronsRange)
+                powIndex = self.sr.randrange(self.d2d_rp.firstNeuronsRange[0], self.d2d_rp.firstNeuronsRange[1])
             powIndex += self.sr.randrange(2)
             self.layers[index].neurons = math.pow(2, powIndex)
             index -= 1

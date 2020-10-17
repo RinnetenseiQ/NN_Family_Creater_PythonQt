@@ -28,10 +28,10 @@ class C2dStructure:
         powIndex = 0
         for i in range(self.layersNumb):
             if i == 0:
-                powIndex = self.sr.randrange(1, c2d_rp.fPowRange)
+                powIndex = self.sr.randrange(c2d_rp.fPowRange[0], c2d_rp.fPowRange[1]+1)
             else:
                 powIndex += self.sr.randrange(2)
-            filters = math.pow(2, powIndex)
+            filters = round(math.pow(2, powIndex))
             self.layers.append(C2dLayer(c2d_rp, filters))
             if self.sameActivation: self.layers[i].actIndex = absorber
             if self.squaredKernels:
@@ -57,11 +57,18 @@ class C2dStructure:
         index = self.sr.randrange(len(self.layers))  ### порой экзепшит
         for i in range(index, len(self.layers)):
             if i != 0:
-                powIndex = Support.getPow2(self.layers[index - 1].filters)
+                powIndex1 = self.layers[index - 1].filters
+                powIndex2 = Support.getPow2(powIndex1)
+                powIndex = round(powIndex2)
+                #powIndex = round(Support.getPow2(self.layers[index - 1].filters))
             else:
-                powIndex = self.sr.randrange(self.c2d_rp.fPowRange)
+                powIndex = self.sr.randrange(self.c2d_rp.fPowRange[0], self.c2d_rp.fPowRange[1]+1)
             powIndex += self.sr.randrange(2)
-            self.layers[i].filters = math.pow(2, powIndex)
+            self.layers[i].filters = round(math.pow(2, powIndex))
+            print(powIndex)
+            if (self.layers[i].filters < self.layers[i-1].filters) and i != 0:
+                #raise Exception("FULL PZDC {}".format(powIndex))
+                pass
 
     def mutateLayersNumb(self, mutateRate):
         if not self.sr.randrange(100) < mutateRate: return
@@ -71,7 +78,7 @@ class C2dStructure:
             powIndex = Support.getPow2(self.layers[-1].filters)
             for i in range(diff):
                 powIndex += self.sr.randrange(2)
-                filters = math.pow(2, powIndex)
+                filters = round(math.pow(2, powIndex))
                 self.layers.append(C2dLayer(self.c2d_rp, filters))
                 if self.sameActivation: self.layers[-1].actIndex = self.layers[0].actIndex
                 if self.sameKernel: self.layers[-1].kernel = self.layers[0].kernel

@@ -6,7 +6,6 @@ import matplotlib
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
-# from keras.models import Sequential
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, ZeroPadding2D
@@ -106,7 +105,7 @@ class VGG:
             maxpool = self.chromosome.c2d_Part.layers[i].maxpoolExist
             modelSeq.add(
                 Conv2D(filters=int(filters), kernel_size=kernel, strides=(1, 1), padding='same', activation=activation))
-            if dropoutRate != 0: modelSeq.add(Dropout(dropoutRate))
+            if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate/100)))
             if maxpool: modelSeq.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
         modelSeq.add(Flatten())
@@ -115,7 +114,7 @@ class VGG:
             activation = self.getActivation(1, i)
             dropoutRate = self.chromosome.d2d_Part.layers[i].dropoutRate
             modelSeq.add(Dense(units=int(neurons), activation=activation))
-            if dropoutRate != 0: modelSeq.add(Dropout(dropoutRate))
+            if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate/100)))
 
         modelSeq.add(Dense(units=self.chr_p.d2d_rp.outputNumb, activation='softmax'))
         return modelSeq

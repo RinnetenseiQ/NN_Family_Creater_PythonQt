@@ -2,12 +2,21 @@ import json
 
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
-from Forms.plot_gui_parent import Ui_MainWindow
+from Forms.Parents.plot_gui_parent import Ui_MainWindow
 
 from MPL_Canvas import MyMplCanvas
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as Toolbar
 import matplotlib.pyplot as plt
 import pandas as pd
+
+
+def setOneAxesProperties(ax, title, x_label, y_label):
+    ax.set_title(title)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.legend(bbox_to_anchor=(1.05, 1))
+    plt.tight_layout()
+    pass
 
 
 class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -19,59 +28,9 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.tempParams = pd.DataFrame()
         self.tempAssessments = pd.DataFrame()
 
-        ########## Testing ##########
-        x = np.arange(0, 5, 0.1)
-        y = np.sin(x)
-        self.figure = plt.figure()
+        self.initFigure()
+        self.canvas.draw()
 
-        egrid = (2, 3)
-        ########## 1 Ax ##########
-        self.ax1 = plt.subplot2grid(egrid, (0, 0))
-        self.ax1.set_title("Assessments - Epoch")
-        self.ax1.set_xlabel("Epoch #")
-        self.ax1.set_ylabel("Assessments")
-        ###########################
-
-        ########## 2 Ax ##########
-        self.ax2 = plt.subplot2grid(egrid, (0, 1))
-        self.ax2.set_title("Accuracy - Epoch")
-        self.ax2.set_xlabel("Epoch #")
-        self.ax2.set_ylabel("Accuracy")
-        ###########################
-
-        ########## 3 Ax ##########
-        self.ax3 = plt.subplot2grid(egrid, (0, 2))
-        self.ax3.set_title("Accuracy - Params")
-        self.ax3.set_xlabel("Params")
-        self.ax3.set_ylabel("Accuracy")
-        ###########################
-
-        ########## 4 Ax ##########
-        self.ax4 = plt.subplot2grid(egrid, (1, 0))
-        self.ax4.set_title("Training Loss and Accuracy (CNN)")
-        self.ax4.set_xlabel("Epoch #")
-        self.ax4.set_ylabel("Loss/Accuracy")
-        ###########################
-
-        ########## 5 Ax ##########
-        self.ax5 = plt.subplot2grid(egrid, (1, 1))
-        ###########################
-
-        ########## 6 Ax ##########
-        self.ax6 = plt.subplot2grid(egrid, (1, 2))
-        ###########################
-
-        self.ax6.plot(x, y)
-        self.ax6.plot(y, x)
-        self.ax6 = plt.plot(x / 2, y / 2)
-        self.ax6 = plt.plot(y / 2, x / 2)
-        plt.tight_layout()
-
-        self.lineUpping = QtWidgets.QVBoxLayout(self.widget)
-        self.canvas = MyMplCanvas(self.figure)
-        self.lineUpping.addWidget(self.canvas)
-        self.toolbar = Toolbar(self.canvas, self)
-        self.lineUpping.addWidget(self.toolbar)
         #############################
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
@@ -92,34 +51,29 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.ax4.plot(N, val_loss, label="val_loss")
             self.ax4.plot(N, acc, label="train_acc")
             self.ax4.plot(N, val_acc, label="val_acc")
-            self.ax4.set_title("Training Loss and Accuracy (CNN)")
-            self.ax4.set_xlabel("Epoch #")
-            self.ax4.set_ylabel("Loss/Accuracy")
+            setOneAxesProperties(self.ax4, "Training Loss and Accuracy (CNN)", "Epoch #", "Loss/Accuracy")
             self.ax4.legend(bbox_to_anchor=(1.05, 1))
-
             pass
         elif data.get("action") == "search_plotting":
             pass
         elif data.get("action") == "clear":
             for ax in self.figure.axes:
-                pass
+                ax.clear()
+            self.setAllAxesProperties()
             pass
         elif data.get("action") == "assessment":
             v = data.get("data")
-            # vs = pd.DataFrame.from_dict([v])
             vs = pd.DataFrame([v])
             self.tempAssessments = self.tempAssessments.append(vs, ignore_index=True, sort=True)
             self.ax1.clear()
-            # self.ax1 = self.tempMetrics.plot(self.tempAssessments["epoch"], self.tempAssessments["Chromosome(0)"])
-            # self.ax1.plot(self.tempAssessments["epoch"], self.tempAssessments["Chromosome(0)"])
             for i in self.tempAssessments.columns:
                 if i != "epoch":
                     self.ax1.plot(self.tempAssessments["epoch"].values, self.tempAssessments[i].values, label=i)
+                    self.ax1.scatter(self.tempAssessments["epoch"].values, self.tempAssessments[i].values)
+                    # https://matplotlib.org/3.3.2/api/_as_gen/matplotlib.pyplot.scatter.html
 
-            self.ax1.set_title("Assessments - Epoch")
-            self.ax1.set_xlabel("Epoch #")
-            self.ax1.set_ylabel("Assessments")
-            self.ax1.legend(bbox_to_anchor=(1.05, 1))
+            #self.ax1.legend(bbox_to_anchor=(1.05, 1))
+            setOneAxesProperties(self.ax1, "Assessments - Epoch", "Epoch #", "Assessments")
             self.canvas.draw()
 
             pass
@@ -132,11 +86,10 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             for i in self.tempAccuracy.columns:
                 if i != "epoch":
                     self.ax2.plot(self.tempAccuracy["epoch"].values, self.tempAccuracy[i].values, label=i)
+                    self.ax2.scatter(self.tempAccuracy["epoch"].values, self.tempAccuracy[i].values)
 
-            self.ax2.set_title("Accuracy - Epoch")
-            self.ax2.set_xlabel("Epoch #")
-            self.ax2.set_ylabel("Accuracy")
-            self.ax2.legend(bbox_to_anchor=(1.05, 1))
+            setOneAxesProperties(self.ax1, "Accuracy - Epoch", "Epoch #", "Accuracy")
+            #self.ax2.legend(bbox_to_anchor=(1.05, 1))
             self.canvas.draw()
             pass
         elif data.get("action") == "params":
@@ -147,12 +100,11 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.ax3.clear()
             for i in self.tempAccuracy.columns:
                 if i != "epoch":
-                    self.ax3.plot(self.tempParams["epoch"].values, self.tempParams[i].values, label=i)
+                    self.ax3.plot(self.tempAccuracy[i].values, self.tempParams[i].values, label=i)
+                    self.ax3.scatter(self.tempAccuracy[i].values, self.tempParams[i].values)
 
-            self.ax3.set_title("Accuracy - Epoch")
-            self.ax3.set_xlabel("Epoch #")
-            self.ax3.set_ylabel("Accuracy")
-            self.ax3.legend(bbox_to_anchor=(1.05, 1))
+            setOneAxesProperties(self.ax1, "Accuracy - Params", "Accuracy", "Params")
+            #self.ax3.legend(bbox_to_anchor=(1.05, 1))
             self.canvas.draw()
 
         elif data.get("action") == "init":
@@ -164,3 +116,38 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.tempAssessments = pd.DataFrame(columns=columns)
 
         self.canvas.draw()
+
+    def setAllAxesProperties(self):
+        setOneAxesProperties(self.ax1, "Assessments - Epoch", "Epoch #", "Assessments")
+        setOneAxesProperties(self.ax2, "Accuracy - Epoch", "Epoch #", "Accuracy")
+        setOneAxesProperties(self.ax3, "Accuracy - Params", "Accuracy", "Params")
+        setOneAxesProperties(self.ax4, "Training Loss and Accuracy (CNN)", "Epoch #", "Loss/Accuracy")
+        setOneAxesProperties(self.ax5, "Title", "X", "Y")
+        setOneAxesProperties(self.ax6, "Title", "X", "Y")
+
+        # plt.constrained_layout()
+        # plt.tight_layout()
+        pass
+
+    def initFigure(self):
+        #self.figure = plt.figure(constrained_layout=True)
+        self.figure = plt.figure()
+        #plt.rcParams['figure.constrained_layout.use'] = True
+
+        # https://matplotlib.org/3.3.2/api/_as_gen/matplotlib.pyplot.figure.html
+        egrid = (2, 3)
+        self.ax1 = plt.subplot2grid(egrid, (0, 0))
+        self.ax2 = plt.subplot2grid(egrid, (0, 1))
+        self.ax3 = plt.subplot2grid(egrid, (0, 2))
+        self.ax4 = plt.subplot2grid(egrid, (1, 0))
+        self.ax5 = plt.subplot2grid(egrid, (1, 1))
+        self.ax6 = plt.subplot2grid(egrid, (1, 2))
+        # https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.subplot2grid.html
+
+        self.setAllAxesProperties()
+        self.lineUpping = QtWidgets.QVBoxLayout(self.widget)
+        self.canvas = MyMplCanvas(self.figure)
+        self.lineUpping.addWidget(self.canvas)
+        self.toolbar = Toolbar(self.canvas, self)
+        self.lineUpping.addWidget(self.toolbar)
+        pass

@@ -62,8 +62,14 @@ class C2dChromosome(Chromosome, ABC):
             cAct_str = ""
             k_str = ""
             cD_str = ""
+            num = 0
+            num_filters = 0
             for i in self.c2d_Part.layers:
                 f_str += str(i.filters) + " "
+                if num > 0 and self.c2d_Part.layers[num-1].filters > i.filters:
+                    #raise Exception("PZDC")
+                    pass
+                num += 1
                 cAct_str += self.chr_p.c2d_rp.activations[i.actIndex] + " "
                 k_str += str(i.kernel[0]) + "x" + str(i.kernel[1]) + " "
                 cD_str += str(i.dropoutRate) + " "

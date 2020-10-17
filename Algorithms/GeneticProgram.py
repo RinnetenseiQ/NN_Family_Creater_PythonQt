@@ -36,23 +36,23 @@ class GeneticProgram:
     def startGeneticSearch(self):
         self.c2dEvolve()
 
-
     def c2dEvolve(self):
         self.population.clear()
         Support.send("plot_ui", "clear", "data", self.sock)
         Support.send("plot_ui", "init", self.chr_p.popSize, self.sock)
         pbValue = 0
         Support.send("search_PB", "setValue", pbValue, self.sock)
-        pbStep = 100/(self.chr_p.genEpoch+1)
-
+        pbStep = 100 / (self.chr_p.genEpoch + 1)
 
         ########## Initialise population ##########
-        Support.send("geneticOutput_TE", "appendText", "###################### Epoch 0 ####################\n", self.sock) ##### GUI ######
+        Support.send("geneticOutput_TE", "appendText", "###################### Epoch 0 ####################\n",
+                     self.sock)  ##### GUI ######
         for i in range(self.chr_p.popSize):
             self.population.append(C2dChromosome(self.chr_p))
-            self.population[i].name = str(i+1)
+            self.population[i].name = str(i + 1)
 
-            Support.send("geneticOutput_TE", "appendText", self.population[-1].getNetConfig(0), self.sock) ##### GUI ######
+            Support.send("geneticOutput_TE", "appendText", self.population[-1].getNetConfig(0),
+                         self.sock)  ##### GUI ######
             print(self.population[-1].getNetConfig(0))
 
             current_metrics = VGG(self.population[i], self.chr_p, self.sock).learn()
@@ -65,20 +65,23 @@ class GeneticProgram:
 
         self.population.sort(key=lambda x: x.assessment, reverse=True)
 
-        Support.send("geneticOutput_TE", "appendText", self.getAssessment(0, 0), self.sock) ##### GUI ######
+        Support.send("geneticOutput_TE", "appendText", self.getAssessment(0, 0), self.sock)  ##### GUI ######
         Support.send("plot_ui", "assessment", self.getAssessment(1, 0), self.sock)
         Support.send("plot_ui", "accuracy", self.getAccuracy(0), self.sock)
         Support.send("plot_ui", "params", self.getParams(0), self.sock)
-        Support.send("geneticOutput_TE", "appendText", "###################################################\n", self.sock) ##### GUI ######
-        pbValue = pbValue + pbStep ##### GUI ######
-        Support.send("search_PB", "setValue", pbValue, self.sock) ##### GUI ######
+        Support.send("geneticOutput_TE", "appendText", "###################################################\n",
+                     self.sock)  ##### GUI ######
+        pbValue = pbValue + pbStep  ##### GUI ######
+        Support.send("search_PB", "setValue", pbValue, self.sock)  ##### GUI ######
 
         ###########################################
 
         ########## Main cycle with genetic operators ###########
         selection = Support.selection(len(self.population), self.chr_p.selection)
         for epoch in range(self.chr_p.genEpoch):
-            Support.send("geneticOutput_TE", "appendText", "###################### Epoch " + str(epoch + 1) + " ####################\n", self.sock) ##### GUI ######
+            Support.send("geneticOutput_TE", "appendText",
+                         "###################### Epoch " + str(epoch + 1) + " ####################\n",
+                         self.sock)  ##### GUI ######
             self.tempMetrics.clear()
             for i in range(len(self.population)):
                 is_cross = False
@@ -86,29 +89,34 @@ class GeneticProgram:
                 # проверить условия!!
                 if i < selection[0]:
                     self.tempMetrics.append([self.population[i].paramsCount, self.population[i].report])
-                    Support.send("geneticOutput_TE", "appendText", self.population[i].getNetConfig(0), self.sock) ##### GUI ######
+                    Support.send("geneticOutput_TE", "appendText", self.population[i].getNetConfig(0),
+                                 self.sock)  ##### GUI ######
                     continue
                 elif i < selection[0] + selection[1]:
                     is_cross = self.population[i].mutate(self.chr_p.mutateRate)  # реализовать кросс
                 else:
                     is_mutate = self.population[i].mutate(self.chr_p.mutateRate)
                 if is_cross or is_mutate:
-                    Support.send("geneticOutput_TE", "appendText", self.population[i].getNetConfig(0), self.sock) ##### GUI ######
+                    Support.send("geneticOutput_TE", "appendText", self.population[i].getNetConfig(0),
+                                 self.sock)  ##### GUI ######
                     self.tempMetrics.append(VGG(self.population[i], self.chr_p, self.sock).learn())
                 else:
-                    Support.send("geneticOutput_TE", "appendText", self.population[i].getNetConfig(0), self.sock)  ##### GUI ######
+                    Support.send("geneticOutput_TE", "appendText", self.population[i].getNetConfig(0),
+                                 self.sock)  ##### GUI ######
                     self.tempMetrics.append([self.population[i].paramsCount, self.population[i].report])
 
             self.setAssessment(0, self.tempMetrics)
             self.population.sort(key=lambda x: x.assessment, reverse=True)
-            Support.send("geneticOutput_TE", "appendText", self.getAssessment(0, epoch), self.sock) ##### GUI ######
-            Support.send("geneticOutput_TE", "appendText", "###################################################\n", self.sock) ##### GUI ######
-            Support.send("plot_ui", "assessment", self.getAssessment(1, epoch), self.sock)
-            Support.send("plot_ui", "accuracy", self.getAccuracy(epoch), self.sock)
-            Support.send("plot_ui", "params", self.getParams(epoch), self.sock)
-            pbValue = pbValue + pbStep ##### GUI ######
-            Support.send("search_PB", "setValue", pbValue, self.sock) ##### GUI ######
-        Support.send( "geneticOutput_TE", "appendText", "############################### ENDED!!!! ############################", self.sock)
+            Support.send("geneticOutput_TE", "appendText", self.getAssessment(0, epoch), self.sock)  ##### GUI ######
+            Support.send("geneticOutput_TE", "appendText", "###################################################\n",
+                         self.sock)  ##### GUI ######
+            Support.send("plot_ui", "assessment", self.getAssessment(1, epoch + 1), self.sock)
+            Support.send("plot_ui", "accuracy", self.getAccuracy(epoch + 1), self.sock)
+            Support.send("plot_ui", "params", self.getParams(epoch + 1), self.sock)
+            pbValue = pbValue + pbStep  ##### GUI ######
+            Support.send("search_PB", "setValue", pbValue, self.sock)  ##### GUI ######
+        Support.send("geneticOutput_TE", "appendText",
+                     "############################### ENDED!!!! ############################", self.sock)
         Support.send("target", "reconnect", "data", self.sock)
         ########################################################
 
@@ -138,14 +146,6 @@ class GeneticProgram:
             est["epoch"] = epoch
             return est
 
-    def getMetrics(self, epoch):
-        metrics = {}
-        for i in self.population:
-            chr_name = "Chromosome(" + i.name + ")"
-            metrics[chr_name] = [i.report.get("accuracy"), i.paramsCount]
-        metrics["epoch"] = epoch
-        return metrics
-
     def getAccuracy(self, epoch):
         accuracy = {}
         for i in self.population:
@@ -161,4 +161,3 @@ class GeneticProgram:
             params[chr_name] = i.paramsCount
         params["epoch"] = epoch
         return params
-
