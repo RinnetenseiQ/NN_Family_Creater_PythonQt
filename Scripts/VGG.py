@@ -213,7 +213,8 @@ class VGG:
     def saveModel(self, model, lb):
         # сохраняем модель и бинаризатор меток на диск
         print("[INFO] serializing network and label binarizer...")
-        model.save(self.chr_p.nrp.modelPath + "\\temp_model")
+        # model.save(self.chr_p.nrp.modelPath + "\\temp_model")
+        model.save(self.chr_p.nrp.modelPath + "\\temp_model.h5")
         with open(self.chr_p.nrp.labelPath + "\\temp_label", "wb") as f:
         #f = open(self.chr_p.nrp.labelPath + "\\temp_label", "wb")
             f.write(pickle.dumps(lb))

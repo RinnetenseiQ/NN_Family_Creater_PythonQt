@@ -49,11 +49,6 @@ class C2dStructure:
     def mutateFilters(self, mutateRate):
         if not self.sr.randrange(100) < mutateRate: return
 
-        ###### Debug ######
-        if len(self.layers) == 0:
-            raise Exception("0 c2d")
-        ###################
-
         index = self.sr.randrange(len(self.layers))  ### порой экзепшит
         for i in range(index, len(self.layers)):
             if i != 0:
