@@ -67,7 +67,8 @@ class GeneticProgram:
 
         Support.send("geneticOutput_TE", "appendText", self.getAssessment(0, 0), self.sock)  ##### GUI ######
         Support.send("plot_ui", "assessment", self.getAssessment(1, 0), self.sock)
-        Support.send("plot_ui", "accuracy", self.getAccuracy(0), self.sock)
+        ac = self.getAccuracy(0)
+        Support.send("plot_ui", "accuracy", ac, self.sock)
         Support.send("plot_ui", "params", self.getParams(0), self.sock)
         Support.send("geneticOutput_TE", "appendText", "###################################################\n",
                      self.sock)  ##### GUI ######
@@ -111,7 +112,9 @@ class GeneticProgram:
             Support.send("geneticOutput_TE", "appendText", "###################################################\n",
                          self.sock)  ##### GUI ######
             Support.send("plot_ui", "assessment", self.getAssessment(1, epoch + 1), self.sock)
-            Support.send("plot_ui", "accuracy", self.getAccuracy(epoch + 1), self.sock)
+            ac = self.getAccuracy(epoch + 1)
+            Support.send("plot_ui", "accuracy", ac, self.sock)
+            #Support.send("plot_ui", "accuracy", self.getAccuracy(epoch + 1), self.sock)
             Support.send("plot_ui", "params", self.getParams(epoch + 1), self.sock)
             pbValue = pbValue + pbStep  ##### GUI ######
             Support.send("search_PB", "setValue", pbValue, self.sock)  ##### GUI ######

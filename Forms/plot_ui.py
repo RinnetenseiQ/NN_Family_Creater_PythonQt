@@ -79,8 +79,13 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             pass
         elif data.get("action") == "accuracy":
             add = data.get("data")
-            add = pd.DataFrame([add])
-            self.tempAccuracy = self.tempAccuracy.append(add, ignore_index=True, sort=True)
+            adds = pd.DataFrame([add])
+            #print(add.values)
+            #print(self.tempAccuracy)
+            # self.tempAccuracy = self.tempAccuracy.append(add, ignore_index=True, sort=True)
+            self.tempAccuracy = self.tempAccuracy.append(adds, ignore_index=True, sort=False)
+            #print(self.tempAccuracy)
+
 
             self.ax2.clear()
             for i in self.tempAccuracy.columns:
@@ -88,14 +93,14 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.ax2.plot(self.tempAccuracy["epoch"].values, self.tempAccuracy[i].values, label=i)
                     self.ax2.scatter(self.tempAccuracy["epoch"].values, self.tempAccuracy[i].values)
 
-            setOneAxesProperties(self.ax1, "Accuracy - Epoch", "Epoch #", "Accuracy")
+            setOneAxesProperties(self.ax2, "Accuracy - Epoch", "Epoch #", "Accuracy")
             #self.ax2.legend(bbox_to_anchor=(1.05, 1))
             self.canvas.draw()
             pass
         elif data.get("action") == "params":
             add = data.get("data")
-            add = pd.DataFrame([add])
-            self.tempParams = self.tempParams.append(add, ignore_index=True, sort=True)
+            adds = pd.DataFrame([add])
+            self.tempParams = self.tempParams.append(adds, ignore_index=True, sort=False)
 
             self.ax3.clear()
             for i in self.tempAccuracy.columns:
@@ -103,8 +108,16 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.ax3.plot(self.tempAccuracy[i].values, self.tempParams[i].values, label=i)
                     self.ax3.scatter(self.tempAccuracy[i].values, self.tempParams[i].values)
 
-            setOneAxesProperties(self.ax1, "Accuracy - Params", "Accuracy", "Params")
+            setOneAxesProperties(self.ax3, "Accuracy - Params", "Accuracy", "Params")
             #self.ax3.legend(bbox_to_anchor=(1.05, 1))
+
+            #### Testing
+            self.ax5.clear()
+            for i in self.tempParams.columns:
+                if i != "epoch":
+                    self.ax5.plot(self.tempParams["epoch"].values, self.tempParams[i].values, label=i)
+                    self.ax5.scatter(self.tempParams["epoch"].values, self.tempParams[i].values)
+            setOneAxesProperties(self.ax5, "Params - Epoch", "Epoch", "Params")
             self.canvas.draw()
 
         elif data.get("action") == "init":
