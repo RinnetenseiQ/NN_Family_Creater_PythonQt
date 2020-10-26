@@ -72,7 +72,7 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.ax1.scatter(self.tempAssessments["epoch"].values, self.tempAssessments[i].values)
                     # https://matplotlib.org/3.3.2/api/_as_gen/matplotlib.pyplot.scatter.html
 
-            #self.ax1.legend(bbox_to_anchor=(1.05, 1))
+            # self.ax1.legend(bbox_to_anchor=(1.05, 1))
             setOneAxesProperties(self.ax1, "Assessments - Epoch", "Epoch #", "Assessments")
             self.canvas.draw()
 
@@ -80,12 +80,11 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         elif data.get("action") == "accuracy":
             add = data.get("data")
             adds = pd.DataFrame([add])
-            #print(add.values)
-            #print(self.tempAccuracy)
-            # self.tempAccuracy = self.tempAccuracy.append(add, ignore_index=True, sort=True)
-            self.tempAccuracy = self.tempAccuracy.append(adds, ignore_index=True, sort=False)
-            #print(self.tempAccuracy)
-
+            # print(add.values)
+            # print(self.tempAccuracy)
+            self.tempAccuracy = self.tempAccuracy.append(add, ignore_index=True, sort=True)
+            # self.tempAccuracy = self.tempAccuracy.append(adds, ignore_index=True, sort=False)
+            # print(self.tempAccuracy)
 
             self.ax2.clear()
             for i in self.tempAccuracy.columns:
@@ -94,13 +93,15 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.ax2.scatter(self.tempAccuracy["epoch"].values, self.tempAccuracy[i].values)
 
             setOneAxesProperties(self.ax2, "Accuracy - Epoch", "Epoch #", "Accuracy")
-            #self.ax2.legend(bbox_to_anchor=(1.05, 1))
+            # self.ax2.legend(bbox_to_anchor=(1.05, 1))
             self.canvas.draw()
             pass
         elif data.get("action") == "params":
             add = data.get("data")
             adds = pd.DataFrame([add])
-            self.tempParams = self.tempParams.append(adds, ignore_index=True, sort=False)
+            # self.tempParams = self.tempParams.append(adds)
+            # self.tempParams = self.tempParams.append(adds, ignore_index=True, sort=False)
+            self.tempParams = self.tempParams.append(adds, ignore_index=True, sort=True)
 
             self.ax3.clear()
             for i in self.tempAccuracy.columns:
@@ -109,7 +110,7 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.ax3.scatter(self.tempAccuracy[i].values, self.tempParams[i].values)
 
             setOneAxesProperties(self.ax3, "Accuracy - Params", "Accuracy", "Params")
-            #self.ax3.legend(bbox_to_anchor=(1.05, 1))
+            # self.ax3.legend(bbox_to_anchor=(1.05, 1))
 
             #### Testing
             self.ax5.clear()
@@ -143,9 +144,11 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         pass
 
     def initFigure(self):
-        #self.figure = plt.figure(constrained_layout=True)
+        # self.figure = plt.figure(constrained_layout=True)
+        setPlotStyle(0)
+
         self.figure = plt.figure()
-        #plt.rcParams['figure.constrained_layout.use'] = True
+        # plt.rcParams['figure.constrained_layout.use'] = True
 
         # https://matplotlib.org/3.3.2/api/_as_gen/matplotlib.pyplot.figure.html
         egrid = (2, 3)
@@ -164,3 +167,34 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toolbar = Toolbar(self.canvas, self)
         self.lineUpping.addWidget(self.toolbar)
         pass
+
+
+def setPlotStyle(style: int):
+    # plt.style.use('Solarize_Light2')
+    # plt.style.use('_classic_test_patch')
+    # plt.style.use('bmh')
+    # plt.style.use('classic')
+    plt.style.use('dark_background')
+    # plt.style.use('fast')
+    # plt.style.use('fivethirtyeight')
+    # plt.style.use('ggplot')
+    # plt.style.use('grayscale')
+    # plt.style.use('seaborn')
+    # plt.style.use('seaborn-bright')
+    # plt.style.use('seaborn-colorblind')
+    # plt.style.use('seaborn-dark')
+    # plt.style.use('seaborn-dark-palette')
+    # plt.style.use('seaborn - darkgrid')
+    # plt.style.use('seaborn - deep')
+    # plt.style.use('seaborn - muted')
+    # plt.style.use('seaborn - notebook')
+    # plt.style.use('seaborn - paper', )
+    # plt.style.use('seaborn - pastel')
+    # plt.style.use('seaborn - poster')
+    # plt.style.use('seaborn - talk')
+    # plt.style.use('seaborn - ticks')
+    # plt.style.use('seaborn - white')
+    # plt.style.use('seaborn-white')
+    # plt.style.use('seaborn-whitegrid')
+    # plt.style.use('tableau - colorblind1')
+    pass

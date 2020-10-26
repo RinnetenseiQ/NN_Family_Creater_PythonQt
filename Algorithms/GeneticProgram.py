@@ -60,7 +60,7 @@ class GeneticProgram:
             self.population[i].report = current_metrics[1]
             self.tempMetrics.append(current_metrics)
 
-        self.setAssessment(0, self.tempMetrics)
+        self.setAssessment(1, self.tempMetrics)
         # self.population = sorted(args, key=lambda x: x.address)
 
         self.population.sort(key=lambda x: x.assessment, reverse=True)
@@ -101,12 +101,15 @@ class GeneticProgram:
                     Support.send("geneticOutput_TE", "appendText", self.population[i].getNetConfig(0),
                                  self.sock)  ##### GUI ######
                     self.tempMetrics.append(VGG(self.population[i], self.chr_p, self.sock).learn())
+                    self.population[i].paramsCount = self.tempMetrics[-1][0]
+                    self.population[i].report = self.tempMetrics[-1][1]
+
                 else:
                     Support.send("geneticOutput_TE", "appendText", self.population[i].getNetConfig(0),
                                  self.sock)  ##### GUI ######
                     self.tempMetrics.append([self.population[i].paramsCount, self.population[i].report])
 
-            self.setAssessment(0, self.tempMetrics)
+            self.setAssessment(1, self.tempMetrics)
             self.population.sort(key=lambda x: x.assessment, reverse=True)
             Support.send("geneticOutput_TE", "appendText", self.getAssessment(0, epoch), self.sock)  ##### GUI ######
             Support.send("geneticOutput_TE", "appendText", "###################################################\n",
@@ -114,7 +117,7 @@ class GeneticProgram:
             Support.send("plot_ui", "assessment", self.getAssessment(1, epoch + 1), self.sock)
             ac = self.getAccuracy(epoch + 1)
             Support.send("plot_ui", "accuracy", ac, self.sock)
-            #Support.send("plot_ui", "accuracy", self.getAccuracy(epoch + 1), self.sock)
+            # Support.send("plot_ui", "accuracy", self.getAccuracy(epoch + 1), self.sock)
             Support.send("plot_ui", "params", self.getParams(epoch + 1), self.sock)
             pbValue = pbValue + pbStep  ##### GUI ######
             Support.send("search_PB", "setValue", pbValue, self.sock)  ##### GUI ######
@@ -131,6 +134,15 @@ class GeneticProgram:
             for i in range(len(metrics)):
                 self.population[i].assessment = metrics[i][1].get("accuracy") + metrics[i][1].get(
                     "accuracy") * minParam / metrics[i][0]
+        elif mode == 1:
+            minParam = metrics[0][0]
+            for i in metrics:
+                if i[0] < minParam and i != 0: minParam = i[0]
+            for i in range(len(metrics)):
+                if metrics[i][1].get("accuracy") > 60:
+                    self.population[i].assessment = metrics[i][1].get("accuracy") + metrics[i][1].get(
+                        "accuracy") * minParam / metrics[i][0]
+                else: self.population[i].assessment = metrics[i][1].get("accuracy")
 
     def getAssessment(self, mode, epoch):
         if mode == 0:

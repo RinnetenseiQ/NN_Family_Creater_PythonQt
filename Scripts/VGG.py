@@ -40,13 +40,23 @@ class VGG:
 
     def learn(self):
         # изменить название
-        lb, trainX, testX, trainY, testY = self.loadData()
-        model = self.createModel()
-        history = self.train(model, trainX, trainY, testX, testY)
-        summary = self.estimateModel(history, model, testX, testY, lb)
-        if summary == [0, 0]: summary = [0, {"accuracy": 0}]
-        self.saveModel(model, lb)
-        return summary
+        try:
+            lb, trainX, testX, trainY, testY = self.loadData()
+            model = self.createModel()
+            history = self.train(model, trainX, trainY, testX, testY)
+            summary = self.estimateModel(history, model, testX, testY, lb)
+            #if summary == [0, 0]: summary = [0, {"accuracy": 0}]
+            self.saveModel(model, lb)
+            return summary
+        except MemoryError:
+            print("Memory Error")
+            summary = [0, {"accuracy": 0}]
+            return summary
+        except Exception:
+            print("Exeption")
+            summary = [0, {"accuracy": 0}]
+            return summary
+
 
     def loadData(self):
         # инициализируем данные и метки

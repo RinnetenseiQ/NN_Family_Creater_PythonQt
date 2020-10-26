@@ -137,7 +137,8 @@ if __name__ == '__main__':
 
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
-    # app.setStyleSheet(qdarkstyle.load_stylesheet())
+    app.setStyleSheet(qdarkstyle.load_stylesheet())
+    # app.setSt
     # app.setStyle('windowsvista')
     # app.setStyle('Windows')
     # print(QStyleFactory.keys())

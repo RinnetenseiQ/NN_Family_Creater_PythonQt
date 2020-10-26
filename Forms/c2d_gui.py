@@ -11,6 +11,7 @@ import json
 from PyQt5.QtWidgets import QFileDialog, qApp
 from PyQt5 import QtGui
 
+from Forms.property_dlg import PropertyWindow
 from NetworkRandomParams import NetworkRandomParams
 from ChromosomeParams import ChromosomeParams
 from Structures.Convolutional.C2dRandomParams import C2dRandomParams
@@ -58,14 +59,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         ############## Widgets Init #################
         self.lf_CCE_ChB.setChecked(True)
-        self.gridLayout_6.setParent(self.groupBox_9)
-        # self.verticalLayout_3.setParent(self.groupBox_4)
-        # self.verticalLayout_2.setParent(self.groupBox)
-        # self.horizontalLayout_27.setParent(self.groupBox_5)
-        # self.horizontalLayout_26.setParent(self.groupBox_8)
 
-        # self.gridLayout_4.setParent(self.groupBox)
-        # self.gridLayout_5.setParent(self.groupBox)
 
         # self.errorOutput_TE.geometry().moveTo(self.geneticOutput_TE.)
         # self.errorOutput_TE.move(self.geneticOutput_TE.mapToGlobal(QtCore.QPoint(0, 0)))
@@ -89,6 +83,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lambda_TB.clicked.connect(self.lambda_TB_Click)
         self.CSVLogger_TB.clicked.connect(self.CSVLogger_TB_Click)
         self.ProgbarLogger_TB.clicked.connect(self.progbarLogger_TB_Click)
+
+        self.actionProperties.triggered.connect(self.show_properties_Click)
 
         # ############### Commutators ################
         # ####### Slots-Signals #######
@@ -204,6 +200,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         pass
 
     def progbarLogger_TB_Click(self):
+        pass
+
+    def show_properties_Click(self):
+        self.propertyWindow = PropertyWindow()
+        self.propertyWindow.exec()
         pass
 
         ###### Slots ##########
