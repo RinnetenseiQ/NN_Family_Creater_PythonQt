@@ -18,6 +18,7 @@ class PropertyWindow(QtWidgets.QDialog, Ui_Dialog):
 
         self.setupUi(self)
         self.initWidgets()
+        self.temp_properties = {"app_theme": 0, "app_style": 0, "plot_style": 0}
 
     def initWidgets(self):
         self.comboBox.addItem("Dark theme")
@@ -93,6 +94,7 @@ class PropertyWindow(QtWidgets.QDialog, Ui_Dialog):
         pass
 
     def combobox_SelectedIndexChanged(self):
+        self.temp_properties["app_theme"] = self.comboBox.currentIndex()
         app = QtWidgets.QApplication.instance()
         if self.comboBox.currentIndex() == 0:
             app.setStyleSheet(qdarkstyle.load_stylesheet())
@@ -101,10 +103,12 @@ class PropertyWindow(QtWidgets.QDialog, Ui_Dialog):
             app.setStyleSheet('')
 
     def combobox_2_SelectedIndexChanged(self):
+        self.temp_properties["app_style"] = self.comboBox_2.currentIndex()
         index = self.comboBox_2.currentIndex()
         setAppStyle(windows_theme=index, linux_theme=index)
 
     def combobox_3_SelectedIndexChanged(self):
+        self.temp_properties["plot_style"] = self.comboBox_3.currentIndex()
         self.ax1.clear()
 
         setPlotStyle(self.plt_themes, self.comboBox_3.currentIndex())
