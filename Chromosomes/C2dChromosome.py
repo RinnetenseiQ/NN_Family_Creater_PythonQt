@@ -1,10 +1,10 @@
+import random
 from abc import ABC
-from random import SystemRandom
+
+from ChromosomeParams import ChromosomeParams
+from Chromosomes.Chromosome import Chromosome
 from Structures.Convolutional.C2dStructure import C2dStructure
 from Structures.Dense.D2dStructure import D2dStructure
-from Chromosomes.Chromosome import Chromosome
-from ChromosomeParams import ChromosomeParams
-import random
 
 
 class C2dChromosome(Chromosome, ABC):

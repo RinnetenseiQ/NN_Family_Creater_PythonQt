@@ -10,6 +10,7 @@ from PyQt5.QtCore import QCoreApplication
 
 from Forms.Parents.property_gui_parent import Ui_Dialog
 from MPL_Canvas import MyMplCanvas
+import sip
 
 
 class PropertyWindow(QtWidgets.QDialog, Ui_Dialog):
@@ -113,8 +114,27 @@ class PropertyWindow(QtWidgets.QDialog, Ui_Dialog):
 
         setPlotStyle(self.plt_themes, self.comboBox_3.currentIndex())
 
-        plt.draw()
+        #plt.draw()
+
+        sip.delete(self.canvas)
+        plt.close()
+        self.figure = plt.figure(constrained_layout=True)
+        x = np.array([1, 2, 3, 4, 5])
+        y = np.sin(x)
+        self.ax1 = plt.plot(x, y, label="xy")
+        self.ax1 = plt.plot(y, x, label="yx")
+        self.ax1 = plt.plot(y / 2, x / 2, label="yx/2")
+        self.ax1 = plt.plot(x / 2, y / 2, label="xy/2")
+
+
+        self.canvas = MyMplCanvas(self.figure)
+        #self.figure.show()
+        self.lineUpping.addWidget(self.canvas)
         self.canvas.draw()
+        #self.update()
+        # self.hide()
+        # self.show()
+
         pass
 
 

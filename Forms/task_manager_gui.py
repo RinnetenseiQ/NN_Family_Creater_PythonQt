@@ -52,6 +52,7 @@ class TasksWindow(QtWidgets.QMainWindow, Ui_QueueWindow):
 
     def plots_Btn_Click(self):
         self.plot_ui.show()
+        #self.plot_ui.update()
         pass
 
     def combobox_SelectedIndex_changed(self):
