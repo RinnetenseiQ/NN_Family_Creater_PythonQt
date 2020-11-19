@@ -51,6 +51,7 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.ax4.plot(N, val_loss, label="val_loss")
             self.ax4.plot(N, acc, label="train_acc")
             self.ax4.plot(N, val_acc, label="val_acc")
+            #self.ax4.plot([data_for_plotting.get("epoch_deJure"), 0], [data_for_plotting.get("epoch_deJure"), 5])
             setOneAxesProperties(self.ax4, "Training Loss and Accuracy (CNN)", "Epoch #", "Loss/Accuracy")
             self.ax4.legend(bbox_to_anchor=(1.05, 1))
             pass

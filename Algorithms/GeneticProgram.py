@@ -1,18 +1,18 @@
 from Chromosomes.C2dChromosome import C2dChromosome
 from Scripts.VGG import VGG
-from ChromosomeParams import ChromosomeParams
+from Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
 from typing import List
-from Support import Support
+import Support
 from multiprocessing import Process
 import socket
-import json
 
-from pycallgraph import PyCallGraph
-from pycallgraph.output import GraphvizOutput
+
+# from pycallgraph import PyCallGraph
+# from pycallgraph.output import GraphvizOutput
 
 
 class GeneticProgramProcess:
-    def __init__(self, chr_p: ChromosomeParams):
+    def __init__(self, chr_p: C2D_ChromosomeParams):
         self.chromosome_params = chr_p
 
     def run(self):
@@ -25,7 +25,7 @@ class GeneticProgramProcess:
 
 class GeneticProgram:
 
-    def __init__(self, chr_p: ChromosomeParams):
+    def __init__(self, chr_p: C2D_ChromosomeParams):
 
         self.tempMetrics = []
         self.chr_p = chr_p

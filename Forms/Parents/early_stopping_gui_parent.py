@@ -1,0 +1,96 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'Forms/Parents/Designer_gui/EarlyStopping_GUI.ui'
+#
+# Created by: PyQt5 UI code generator 5.12.3
+#
+# WARNING! All changes made in this file will be lost!
+
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+
+class Ui_EarlyStoppingWindow(object):
+    def setupUi(self, EarlyStoppingWindow):
+        EarlyStoppingWindow.setObjectName("EarlyStoppingWindow")
+        EarlyStoppingWindow.resize(427, 228)
+        self.frame = QtWidgets.QFrame(EarlyStoppingWindow)
+        self.frame.setGeometry(QtCore.QRect(10, 10, 401, 201))
+        self.frame.setFrameShape(QtWidgets.QFrame.WinPanel)
+        self.frame.setObjectName("frame")
+        self.gridLayoutWidget = QtWidgets.QWidget(self.frame)
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(10, 10, 381, 131))
+        self.gridLayoutWidget.setObjectName("gridLayoutWidget")
+        self.gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.label_3 = QtWidgets.QLabel(self.gridLayoutWidget)
+        self.label_3.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_3.setObjectName("label_3")
+        self.gridLayout.addWidget(self.label_3, 2, 0, 1, 1)
+        self.label_2 = QtWidgets.QLabel(self.gridLayoutWidget)
+        self.label_2.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_2.setObjectName("label_2")
+        self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
+        self.mode_CB = QtWidgets.QComboBox(self.gridLayoutWidget)
+        self.mode_CB.setObjectName("mode_CB")
+        self.gridLayout.addWidget(self.mode_CB, 3, 1, 1, 1)
+        self.delta_dSB = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget)
+        self.delta_dSB.setObjectName("delta_dSB")
+        self.gridLayout.addWidget(self.delta_dSB, 1, 1, 1, 1)
+        self.label = QtWidgets.QLabel(self.gridLayoutWidget)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName("label")
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.label_4 = QtWidgets.QLabel(self.gridLayoutWidget)
+        self.label_4.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_4.setObjectName("label_4")
+        self.gridLayout.addWidget(self.label_4, 3, 0, 1, 1)
+        self.monitor_CB = QtWidgets.QComboBox(self.gridLayoutWidget)
+        self.monitor_CB.setObjectName("monitor_CB")
+        self.gridLayout.addWidget(self.monitor_CB, 0, 1, 1, 1)
+        self.patience_SB = QtWidgets.QSpinBox(self.gridLayoutWidget)
+        self.patience_SB.setObjectName("patience_SB")
+        self.gridLayout.addWidget(self.patience_SB, 2, 1, 1, 1)
+        self.verbose_ChB = QtWidgets.QCheckBox(self.gridLayoutWidget)
+        self.verbose_ChB.setObjectName("verbose_ChB")
+        self.gridLayout.addWidget(self.verbose_ChB, 0, 2, 1, 1)
+        self.weights_ChB = QtWidgets.QCheckBox(self.gridLayoutWidget)
+        self.weights_ChB.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.weights_ChB.setTristate(False)
+        self.weights_ChB.setObjectName("weights_ChB")
+        self.gridLayout.addWidget(self.weights_ChB, 1, 2, 1, 1)
+        self.gridLayout.setColumnStretch(0, 2)
+        self.gridLayout.setColumnStretch(1, 2)
+        self.gridLayout.setRowStretch(0, 1)
+        self.horizontalLayoutWidget_4 = QtWidgets.QWidget(self.frame)
+        self.horizontalLayoutWidget_4.setGeometry(QtCore.QRect(10, 150, 381, 41))
+        self.horizontalLayoutWidget_4.setObjectName("horizontalLayoutWidget_4")
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_4)
+        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.default_ChB = QtWidgets.QCheckBox(self.horizontalLayoutWidget_4)
+        self.default_ChB.setObjectName("default_ChB")
+        self.horizontalLayout_4.addWidget(self.default_ChB)
+        self.OK_Btn = QtWidgets.QPushButton(self.horizontalLayoutWidget_4)
+        self.OK_Btn.setObjectName("OK_Btn")
+        self.horizontalLayout_4.addWidget(self.OK_Btn)
+        self.cancel_Btn = QtWidgets.QPushButton(self.horizontalLayoutWidget_4)
+        self.cancel_Btn.setObjectName("cancel_Btn")
+        self.horizontalLayout_4.addWidget(self.cancel_Btn)
+
+        self.retranslateUi(EarlyStoppingWindow)
+        QtCore.QMetaObject.connectSlotsByName(EarlyStoppingWindow)
+
+    def retranslateUi(self, EarlyStoppingWindow):
+        _translate = QtCore.QCoreApplication.translate
+        EarlyStoppingWindow.setWindowTitle(_translate("EarlyStoppingWindow", "Dialog"))
+        self.label_3.setText(_translate("EarlyStoppingWindow", "Patience"))
+        self.label_2.setText(_translate("EarlyStoppingWindow", "Delta"))
+        self.label.setText(_translate("EarlyStoppingWindow", "Monitor"))
+        self.label_4.setText(_translate("EarlyStoppingWindow", "Mode"))
+        self.verbose_ChB.setText(_translate("EarlyStoppingWindow", "verbose"))
+        self.weights_ChB.setText(_translate("EarlyStoppingWindow", "restore weights"))
+        self.default_ChB.setText(_translate("EarlyStoppingWindow", "set as Default"))
+        self.OK_Btn.setText(_translate("EarlyStoppingWindow", "OK"))
+        self.cancel_Btn.setText(_translate("EarlyStoppingWindow", "Cancel"))

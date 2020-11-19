@@ -8,11 +8,13 @@ from threading import Thread
 import qdarkstyle
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QCoreApplication, QSettings
+from PyQt5.QtWidgets import QFileDialog
 
 from Algorithms.GeneticProgram import GeneticProgramProcess
 from Forms.Parents.start_page_gui_parent import Ui_StartPageWindow
 from Forms.c2d_gui import MainWindow
 from Forms.plot_ui import PlotWindow
+from Forms.predict_c2d_gui import PredictC2DWindow
 from Forms.task_manager_gui import TasksWindow
 
 
@@ -22,7 +24,8 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
         self.settings = QSettings()
 
         self.setupUi(self)
-        # self.loadSettings()
+        self.settings = QSettings()
+        self.loadSettings()
         self.initWidgets()
 
         self.paramsQueue = deque([])
@@ -53,15 +56,31 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
         self.show()
 
     def initWidgets(self):
-        self.comboBox.addItem("Convolutional 2D NN")
+        tab_list = ["Optimizing",
+                    "Application",
+                    "Custom",
+                    "Predict"]
+        for i in range(len(tab_list)):
+            self.tabWidget.setTabText(i, tab_list[i])
+        self.tabWidget.setCurrentIndex(0)
 
-        self.comboBox_2.addItem("Genetic optimize")
-        self.comboBox_2.addItem("Immune optimize")
-        self.comboBox_2.addItem("Custom")
+        self.comboBox.addItems(["Convolutional 2D NN"])
+        self.comboBox_2.addItems(["Genetic optimize", "Immune optimize", "Custom"])
+        self.app_model_CB.addItems(["ResNet50V2", "VGG19"])
+        self.predict_problem_CB.addItems(["classification", "regression", "clasterization"])
+        self.predict_datatype_CB.addItems(["2D (image)", "3D (video)", "1D (timesteps)", "text", "DataFrame"])
 
         self.pushButton.clicked.connect(self.open_Btn_Click)
         self.pushButton_2.clicked.connect(self.create_Btn_Click)
         self.pushButton_3.clicked.connect(self.task_Btn_Click)
+        self.dataset_path_TB.clicked.connect(self.app_dataset_path_Btn_clicked)
+        self.saveTo_TB.clicked.connect(self.app_saveTo_Bnt_Clicked)
+        self.app_create_Btn.clicked.connect(self.app_create_Btn_Clicked)
+        self.predict_letsgo_Btn.clicked.connect(self.predict_lets_go_Btn_Clicked)
+
+    def loadSettings(self):
+        self.app_dataset_path_LE.setText(self.settings.value("app_datasetPath", "C:/", type=str))
+        self.saveTo_path_LE.setText(self.settings.value("custom_model_path", "C:/", type=str))
 
     def create_Btn_Click(self):
         if self.comboBox.currentIndex() == 0:
@@ -77,6 +96,43 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
 
     def task_Btn_Click(self):
         self.tasks_window.show()
+        pass
+
+    def app_dataset_path_Btn_clicked(self):
+        dirlist = QFileDialog.getExistingDirectory(self, "Get Dataset folder",
+                                                   self.settings.value("app_datasetPath", "C:/", type=str))
+        if dirlist == "":
+            self.app_dataset_path_LE.setText(self.settings.value("app_datasetPath", "C:/", type=str))
+        else:
+            self.app_dataset_path_LE.setText(dirlist)
+            self.settings.setValue("app_datasetPath", dirlist)
+            self.settings.sync()
+
+    def app_saveTo_Bnt_Clicked(self):
+        dirlist = QFileDialog.getExistingDirectory(self, "Get folder to save model",
+                                                   self.settings.value("custom_model_path", "C:/", type=str))
+        if dirlist == "":
+            self.saveTo_path_LE.setText(self.settings.value("custom_model_path", "C:/", type=str))
+        else:
+            self.saveTo_path_LE.setText(dirlist)
+            self.settings.setValue("custom_model_path", dirlist)
+            self.settings.sync()
+
+    def app_create_Btn_Clicked(self):
+        if self.app_model_CB.currentText() == 0:
+            params = {"type": "ResNet50V2", "datapath": self.app_dataset_path_LE.text(),
+                      "save_to": self.saveTo_path_LE.text()}
+            self.paramsQueue.append(params)
+
+            pass
+
+    def predict_lets_go_Btn_Clicked(self):
+        self.predict_window = None
+        # predict_mode = (self.predict_problem_CB.currentText() == 0) and (self.predict_datatype_CB.currentText() == 0)
+        if (self.predict_problem_CB.currentIndex() == 0) and (self.predict_datatype_CB.currentIndex() == 0):
+            self.predict_window = PredictC2DWindow()
+        self.predict_window.show()
+
         pass
 
 
@@ -112,16 +168,24 @@ class UIHandler(QtCore.QObject):
 
 
 class QueueProgramThread(Thread):
-    def __init__(self, chr_q: deque):
+    def __init__(self, params_queue: deque):
         super().__init__()
-        self.chromosome_params_queue = chr_q
+        self.params_queue = params_queue
 
     def run(self):
         # while len(self.chromosome_params_queue) > 0:
+
         while True:
-            if len(self.chromosome_params_queue) != 0:
-                chromosome_params = self.chromosome_params_queue.popleft()
-                prog = GeneticProgramProcess(chromosome_params)
+            if len(self.params_queue) != 0:
+                prog = None
+                params = self.params_queue.popleft()
+                if params.__class__.__name__ == "C2D_ChromosomeParams":
+                    prog = GeneticProgramProcess(params)
+                elif type(params) == dict:
+                    pass
+                elif params == "custom":  # переделать под custom
+                    pass
+
                 prog.run()
                 # процесс стопит поток или нет? Yes
             else:

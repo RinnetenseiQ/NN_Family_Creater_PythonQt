@@ -3,7 +3,7 @@ from Structures.Convolutional.C2dRandomParams import C2dRandomParams
 from Structures.Dense.D2dRandomParams import D2dRandomParams
 
 
-class ChromosomeParams:
+class C2D_ChromosomeParams:
     def __init__(self, nrp: NetworkRandomParams,
                  c2d_rp: C2dRandomParams,
                  d2d_rp: D2dRandomParams,

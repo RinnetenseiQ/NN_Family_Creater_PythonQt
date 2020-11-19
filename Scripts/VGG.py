@@ -13,27 +13,25 @@ from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import backend
 from imutils import paths
-import matplotlib.pyplot as plt
 import numpy as np
 import random
 import pickle
 import cv2
 import os
 
-
 import socket
 import json
 
 from Chromosomes.C2dChromosome import C2dChromosome
-from ChromosomeParams import ChromosomeParams
+from Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
 from Callbacks.FitLogger import FitLogger
-from Support import Support
+import Support
 
 matplotlib.use("Agg")
 
 
 class VGG:
-    def __init__(self, chromosome: C2dChromosome, chr_p: ChromosomeParams, sock: socket):
+    def __init__(self, chromosome: C2dChromosome, chr_p: C2D_ChromosomeParams, sock: socket):
         self.chr_p = chr_p
         self.chromosome = chromosome
         self.sock = sock
@@ -56,7 +54,14 @@ class VGG:
             print("Exeption")
             summary = [0, {"accuracy": 0}]
             return summary
-
+        ####### For testing ########
+        # lb, trainX, testX, trainY, testY = self.loadData()
+        # model = self.createModel()
+        # history = self.train(model, trainX, trainY, testX, testY)
+        # summary = self.estimateModel(history, model, testX, testY, lb)
+        # # if summary == [0, 0]: summary = [0, {"accuracy": 0}]
+        # self.saveModel(model, lb)
+        # return summary
 
     def loadData(self):
         # инициализируем данные и метки
@@ -115,7 +120,7 @@ class VGG:
             maxpool = self.chromosome.c2d_Part.layers[i].maxpoolExist
             modelSeq.add(
                 Conv2D(filters=int(filters), kernel_size=kernel, strides=(1, 1), padding='same', activation=activation))
-            if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate/100)))
+            if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate / 100)))
             if maxpool: modelSeq.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
         modelSeq.add(Flatten())
@@ -124,7 +129,7 @@ class VGG:
             activation = self.getActivation(1, i)
             dropoutRate = self.chromosome.d2d_Part.layers[i].dropoutRate
             modelSeq.add(Dense(units=int(neurons), activation=activation))
-            if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate/100)))
+            if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate / 100)))
 
         modelSeq.add(Dense(units=self.chr_p.d2d_rp.outputNumb, activation='softmax'))
         return modelSeq
@@ -145,8 +150,9 @@ class VGG:
         aug = ImageDataGenerator(rotation_range=30, width_shift_range=0.1,
                                  height_shift_range=0.1, shear_range=0.2, zoom_range=0.2,
                                  horizontal_flip=True, fill_mode="nearest")
-
-        callbacks = [FitLogger(self.sock)]
+        callbacks = self.chr_p.nrp.callbacks_handler.getCallbacks()
+        callbacks.append(FitLogger(self.sock))
+        # callbacks = [FitLogger(self.sock)]
         H = model.fit_generator(aug.flow(trainX, trainY, batch_size=self.chr_p.nrp.batchSize),
                                 validation_data=(testX, testY), steps_per_epoch=len(trainX) // self.chr_p.nrp.batchSize,
                                 epochs=self.chr_p.nrp.trainEpoch, callbacks=callbacks)
@@ -164,7 +170,7 @@ class VGG:
         report = classification_report(testY.argmax(axis=1),
                                        predictions.argmax(axis=1), target_names=lb.classes_, output_dict=True)
         print(classification_report(testY.argmax(axis=1),
-                                       predictions.argmax(axis=1), target_names=lb.classes_, output_dict=False))
+                                    predictions.argmax(axis=1), target_names=lb.classes_, output_dict=False))
 
         # строим графики потерь и точности
         ######## Data for plotting sending ########
@@ -175,7 +181,7 @@ class VGG:
 
         plot_data: Dict[str, Union[int, Any]] = {}
         plot_data["epoch_deJure"] = self.chr_p.nrp.trainEpoch
-        plot_data["epoch_deFacto"] = self.chr_p.nrp.trainEpoch  # доделать
+        plot_data["epoch_deFacto"] = len(loss)  # доделать
         plot_data["confusion_matrix"] = matrix.tolist()
         plot_data["loss"] = loss
         plot_data["val_loss"] = val_loss
@@ -187,26 +193,23 @@ class VGG:
         # plot_data["val_acc"] = H.history["val_acc"]
         plot_data = json.dumps(plot_data)
 
-
-
-
         Support.send("plot_ui", "chr_plotting", plot_data, self.sock)
         ###########################################
 
         # переделать под интерфейс
-        N = np.arange(0, self.chr_p.nrp.trainEpoch)
-        plt.style.use("ggplot")
-        plt.figure()
-        plt.plot(N, H.history["loss"], label="train_loss")
-        plt.plot(N, H.history["val_loss"], label="val_loss")
-        plt.plot(N, H.history["acc"], label="train_acc")
-        plt.plot(N, H.history["val_acc"], label="val_acc")
-        plt.title("Training Loss and Accuracy (CNN)")
-        plt.xlabel("Epoch #")
-        plt.ylabel("Loss/Accuracy")
-        plt.legend()
-        plt.savefig(self.chr_p.nrp.plotPath + "\\temp_plot.png")
-        plt.close('all')
+        # N = np.arange(0, self.chr_p.nrp.trainEpoch)
+        # plt.style.use("ggplot")
+        # plt.figure()
+        # plt.plot(N, H.history["loss"], label="train_loss")
+        # plt.plot(N, H.history["val_loss"], label="val_loss")
+        # plt.plot(N, H.history["acc"], label="train_acc")
+        # plt.plot(N, H.history["val_acc"], label="val_acc")
+        # plt.title("Training Loss and Accuracy (CNN)")
+        # plt.xlabel("Epoch #")
+        # plt.ylabel("Loss/Accuracy")
+        # plt.legend()
+        # plt.savefig(self.chr_p.nrp.plotPath + "\\temp_plot.png")
+        # plt.close('all')
 
         # варианты вместо model.summary()
         # model.count_params()  #1
@@ -226,7 +229,7 @@ class VGG:
         # model.save(self.chr_p.nrp.modelPath + "\\temp_model")
         model.save(self.chr_p.nrp.modelPath + "\\temp_model.h5")
         with open(self.chr_p.nrp.labelPath + "\\temp_label", "wb") as f:
-        #f = open(self.chr_p.nrp.labelPath + "\\temp_label", "wb")
+            # f = open(self.chr_p.nrp.labelPath + "\\temp_label", "wb")
             f.write(pickle.dumps(lb))
 
     def getActivation(self, mode, i) -> int:
@@ -241,4 +244,3 @@ class VGG:
         # доделать!!!
         optimizers = self.chr_p.nrp.optimizers
         return SGD(lr=lr)
-

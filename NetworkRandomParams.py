@@ -1,11 +1,12 @@
-from Support import Support
+import Support
 
 
 class NetworkRandomParams:
     def __init__(self, notRandomLR, LR_Range, dataPath,
                  modelPath, labelPath, plotPath,
                  networkName, optimizers, loss_func,
-                 trainEpoch, batchSize):
+                 trainEpoch, batchSize, callbacks_handler):
+        self.callbacks_handler = callbacks_handler
         self.batchSize = batchSize
         self.trainEpoch = trainEpoch
         self.loss_func = loss_func

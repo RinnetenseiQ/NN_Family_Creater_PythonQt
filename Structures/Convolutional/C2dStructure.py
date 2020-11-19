@@ -2,7 +2,7 @@ import random
 from Structures.Convolutional.C2dLayer import C2dLayer
 from Structures.Convolutional.C2dRandomParams import C2dRandomParams
 import math
-from Support import Support
+import Support
 
 
 class C2dStructure:

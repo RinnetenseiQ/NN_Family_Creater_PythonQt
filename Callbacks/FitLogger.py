@@ -1,7 +1,6 @@
-from tensorflow.keras.callbacks import Callback
 import socket
-import json
-from Support import Support
+from tensorflow.keras.callbacks import Callback
+import Support
 
 
 # from project_main import MainWindow

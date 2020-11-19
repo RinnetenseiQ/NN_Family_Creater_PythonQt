@@ -1,40 +1,30 @@
 # from PySide2 import QtWidgets
-import numpy as np
-from PyQt5 import QtWidgets
-from PyQt5 import QtCore
-from PyQt5.QtCore import QCoreApplication, QSettings
-
-import qdarkstyle
 import sys
-import json
+from collections import deque
 
-from PyQt5.QtWidgets import QFileDialog, qApp
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QCoreApplication, QSettings
+from PyQt5.QtWidgets import QFileDialog
 
+from Callbacks.CallbacksHandler import CallbacksHandler
+from Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
+from Forms.Parents.c2d_gui_parent import Ui_MainWindow
+from Forms.early_stopping_dlg import EarlyStoppingDlg
+from Forms.model_checkpoint_dlg import ModelCheckpointDlg
 from Forms.property_dlg import PropertyWindow
 from NetworkRandomParams import NetworkRandomParams
-from ChromosomeParams import ChromosomeParams
 from Structures.Convolutional.C2dRandomParams import C2dRandomParams
 from Structures.Dense.D2dRandomParams import D2dRandomParams
-from Support import Support
-from collections import deque
-from threading import Thread
+import Support
 
-import socket
-import time
+# from pycallgraph import PyCallGraph
+# from pycallgraph.output import GraphvizOutput
 
-from MPL_Canvas import MyMplCanvas
-from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as Toolbar
-import matplotlib.pyplot as plt
-from Forms.plot_ui import PlotWindow
-
-from Algorithms.GeneticProgram import GeneticProgramProcess
 
 # from (ui filename) import (class)
 # from Forms.project_gui import Ui_MainWindow
 # from PyQt5.uic.Compiler.qtproxies import QtCore
-
-from Forms.Parents.c2d_gui_parent import Ui_MainWindow
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -43,8 +33,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.tasks_window = tasks_window
         self.paramsQueue = paramsQueue
         self.settings = QSettings()
-
-        # self.queue_program_thread: QueueProgramThread = None
+        self.callbacks_handler = CallbacksHandler()
         self.setupUi(self)
         self.loadSettings()
         self.first_value = None
@@ -53,17 +42,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.example = ""
         self.equal = ""
 
-        # self.paramsQueue = deque([])
-        # queue_program_thread = QueueProgramThread(self.paramsQueue, self)
-        # queue_program_thread.start()
-
         ############## Widgets Init #################
         self.lf_CCE_ChB.setChecked(True)
-
-
-        # self.errorOutput_TE.geometry().moveTo(self.geneticOutput_TE.)
-        # self.errorOutput_TE.move(self.geneticOutput_TE.mapToGlobal(QtCore.QPoint(0, 0)))
-        #############################################
 
         ############## Widgets Listeners ############
         ###### Buttons ######
@@ -85,31 +65,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ProgbarLogger_TB.clicked.connect(self.progbarLogger_TB_Click)
 
         self.actionProperties.triggered.connect(self.show_properties_Click)
+        self.modelCheckpoint_ChB.stateChanged.connect(self.modelCheckpoint_checked)
+        self.earlyStopping_ChB.stateChanged.connect(self.earlyStopping_checked)
 
-        # ############### Commutators ################
-        # ####### Slots-Signals #######
-        # # создадим поток
-        # self.thread = QtCore.QThread()
-        # # создадим объект для выполнения кода в другом потоке
-        # self.ui_handler = UIHandler()
-        # # перенесём объект в другой поток
-        # self.ui_handler.moveToThread(self.thread)
-        # # после чего подключим все сигналы и слоты
-        # self.ui_handler.signal.connect(self.refresh_UI)
-        # self.plot_ui = PlotWindow()
-        # self.ui_handler.plot_signal.connect(self.plot_ui.refreshFigure)
-        # # self.ui_handler.signal.
-        # # подключим сигнал старта потока к методу run у объекта, который должен выполнять код в другом потоке
-        # self.thread.started.connect(self.ui_handler.run)
-        # # запустим поток
-        # self.thread.start()
-        # #############################
-        ########### Naive ###########
-        # self.sock_listener = SocketListener(self)
-        # self.sock_listener.start()
-        #############################
-
-        ############################################
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         # тут нужно спросить подтверждение и убить всех детей
@@ -132,7 +90,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         pass
 
     def datasetPath_TB_Click(self):
-        # при нажатии на отмену валится
         dirlist = QFileDialog.getExistingDirectory(self, "Get Dataset folder",
                                                    self.settings.value("datasetPath", "C:/", type=str))
         if dirlist == "":
@@ -173,13 +130,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.settings.sync()
 
     def modelCheckpoint_TB_Click(self):
+        self.model_checkpoint_window = ModelCheckpointDlg()
+        self.model_checkpoint_window.exec()
         pass
 
     def tensorBoard_TB_Click(self):
         pass
 
     def earlyStopping_TB_Click(self):
+        self.early_stopping_window = EarlyStoppingDlg()
+        self.early_stopping_window.signal.connect(self.get_early_stopping_sett)
+        self.early_stopping_window.exec()
         pass
+
+    @QtCore.pyqtSlot(object)
+    def get_early_stopping_sett(self, data: dict):
+        self.callbacks_handler.early_stopping = data
+        print("ok")
+
 
     def scheduler_TB_Click(self):
         pass
@@ -207,29 +175,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.propertyWindow.exec()
         pass
 
-        ###### Slots ##########
+    def modelCheckpoint_checked(self):
+        if self.modelCheckpoint_ChB.isChecked():
+            self.callbacks_handler.active["model_checkpoint"] = True
+        else:
+            self.callbacks_handler.active["model_checkpoint"] = False
+        pass
 
-    # @QtCore.pyqtSlot(object)
-    # def refresh_UI(self, data: dict):
-    #     if data.get("target") == "geneticOutput_TE":
-    #         if data.get("action") == "appendText":
-    #             self.geneticOutput_TE.append(data.get("data"))
-    #         elif data.get("action") == "clear":
-    #             self.geneticOutput_TE.clear()
-    #     elif data.get("target") == "chrOutput_TE":
-    #         if data.get("action") == "appendText":
-    #             self.chrOutput_TE.append(data.get("data"))
-    #         elif data.get("action") == "clear":
-    #             self.chrOutput_TE.clear()
-    #     elif data.get("target") == "chr_plotting":
-    #         pass
-    #     elif data.get("target") == "search_plotting":
-    #         pass
-    #     elif data.get("target") == "search_PB":
-    #         if data.get("action") == "setValue":
-    #             self.progressBar.setValue(data.get("data"))
-
-    #######################
+    def earlyStopping_checked(self):
+        if self.earlyStopping_ChB.isChecked():
+            self.callbacks_handler.active["early_stopping"] = True
+        else:
+            self.callbacks_handler.active["early_stopping"] = False
+        pass
 
     ################# Logic #############################
     def collectGUIParams(self):
@@ -301,7 +259,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                   [self.minLR_dSB.value(), self.maxLR_dSB.value()],
                                   self.DatasetPath_LE.text(), self.ModelPath_LE.text(), self.Labels_LE.text(),
                                   self.PlotsPath_LE.text(), self.netName_LE.text(), optimizers, loss_func,
-                                  self.networkEpoch_SB.value(), self.batchSize_SB.value())
+                                  self.networkEpoch_SB.value(), self.batchSize_SB.value(), self.callbacks_handler)
         c2d_rp = C2dRandomParams(self.maxConv_SB.value(),
                                  [self.min_filersPowIndex_SB.value(), self.max_filersPowIndex_SB.value()],
                                  len(cActivations), cActivations,
@@ -311,94 +269,45 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                  [self.min_neuronsPowIndex_SB.value(), self.max_neuronsPowIndex_SB.value()],
                                  Support.getOutputNumb(self.DatasetPath_LE.text()), len(dActivations),
                                  dActivations, self.dDropout_ChB.isChecked(), self.dMaxDropout_SB.value())
-        gp = ChromosomeParams(nrp, c2d_rp, d2d_rp, self.evolEpoch_SB.value(),
-                              [self.copy_SB.value(), self.cross_SP.value(), self.mutate_SB.value()],
-                              self.popSize_SB.value(), self.estimatingWay_CB.currentIndex(), 2,
-                              self.mutateRate_SB.value(), 1, 1)
+        gp = C2D_ChromosomeParams(nrp, c2d_rp, d2d_rp, self.evolEpoch_SB.value(),
+                                  [self.copy_SB.value(), self.cross_SP.value(), self.mutate_SB.value()],
+                                  self.popSize_SB.value(), self.estimatingWay_CB.currentIndex(), 2,
+                                  self.mutateRate_SB.value(), 1, 1)
         return gp
 
-    #####################################################
 
 
-# class UIHandler(QtCore.QObject):
-#     signal = QtCore.pyqtSignal(object)
-#     plot_signal = QtCore.pyqtSignal(object)
-#
-#     def __init__(self):
+# class SocketListener(Thread):
+#     def __init__(self, mainwindow: MainWindow):
 #         self.sock = socket.socket()
 #         self.sock.bind(('localhost', 12246))
 #         self.sock.listen(1)
-#         super().__init__()
+#         self.mainwindow = mainwindow
+#         Thread.__init__(self)
 #
-#     def run(self):
+#     def run(self) -> None:
 #         conn, addr = self.sock.accept()
 #         while True:
 #             data = conn.recv(20480).decode('UTF-8')
 #             if not data:
 #                 continue
-#             datalist = data.split('&')
-#             if datalist[-1] == "": datalist.pop()
+#             datalist = data.split('}')
+#             datalist.pop()
 #             for data in datalist:
-#                 #data = eval(data)
-#                 data = json.loads(data)
-#                 if data.get("action") == "reconnect":
-#                     conn, addr = self.sock.accept()
+#                 data = eval(data + "}")
+#                 if data.get("codeword") == "geneticOutput_TE":
+#                     self.mainwindow.geneticOutput_TE.append(data.get("data"))
+#                     time.sleep(0.1)
+#                     self.mainwindow.geneticOutput_TE.verticalScrollBar().setValue(
+#                         self.mainwindow.geneticOutput_TE.verticalScrollBar().maximum())
+#                 elif data.get("codeword") == "chrOutput_TE":
+#                     self.mainwindow.chrOutput_TE.append(data.get("data"))
+#                 elif data.get("codeword") == "chr_plotting":
 #                     pass
-#                 elif data.get("target") == "plot_ui":
-#                     self.plot_signal.emit(data)
-#                 else:
-#                     self.signal.emit(data)
-#             QtCore.QThread.msleep(1000)
-
-
-class SocketListener(Thread):
-    def __init__(self, mainwindow: MainWindow):
-        self.sock = socket.socket()
-        self.sock.bind(('localhost', 12246))
-        self.sock.listen(1)
-        self.mainwindow = mainwindow
-        Thread.__init__(self)
-
-    def run(self) -> None:
-        conn, addr = self.sock.accept()
-        while True:
-            data = conn.recv(20480).decode('UTF-8')
-            if not data:
-                continue
-            datalist = data.split('}')
-            datalist.pop()
-            for data in datalist:
-                data = eval(data + "}")
-                if data.get("codeword") == "geneticOutput_TE":
-                    self.mainwindow.geneticOutput_TE.append(data.get("data"))
-                    time.sleep(0.1)
-                    self.mainwindow.geneticOutput_TE.verticalScrollBar().setValue(
-                        self.mainwindow.geneticOutput_TE.verticalScrollBar().maximum())
-                elif data.get("codeword") == "chrOutput_TE":
-                    self.mainwindow.chrOutput_TE.append(data.get("data"))
-                elif data.get("codeword") == "chr_plotting":
-                    pass
-                elif data.get("codeword") == "search_plotting":
-                    pass
-                elif data.get("codeword") == "search_PB":
-                    self.mainwindow.progressBar.setValue(data.get("data"))
-
-
-# class QueueProgramThread(Thread):
-#     def __init__(self, chr_q: deque, main_window: MainWindow):
-#         super().__init__()
-#         self.chromosome_params_queue = chr_q
-#         self.main_window = main_window
-#
-#     def run(self):
-#         # while len(self.chromosome_params_queue) > 0:
-#         while True:
-#             if len(self.chromosome_params_queue) != 0:
-#                 chromosome_params = self.chromosome_params_queue.popleft()
-#                 prog = GeneticProgramProcess(chromosome_params)
-#                 prog.run()
-#                 # процесс стопит поток или нет? Yes
-#             else: time.sleep(1)
+#                 elif data.get("codeword") == "search_plotting":
+#                     pass
+#                 elif data.get("codeword") == "search_PB":
+#                     self.mainwindow.progressBar.setValue(data.get("data"))
 
 
 if __name__ == '__main__':

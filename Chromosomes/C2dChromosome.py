@@ -1,14 +1,14 @@
 import random
 from abc import ABC
 
-from ChromosomeParams import ChromosomeParams
+from Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
 from Chromosomes.Chromosome import Chromosome
 from Structures.Convolutional.C2dStructure import C2dStructure
 from Structures.Dense.D2dStructure import D2dStructure
 
 
 class C2dChromosome(Chromosome, ABC):
-    def __init__(self, chr_p: ChromosomeParams):
+    def __init__(self, chr_p: C2D_ChromosomeParams):
         self.chr_p = chr_p
         self.c2d_Part = C2dStructure(self.chr_p.c2d_rp)
         self.d2d_Part = D2dStructure(self.chr_p.nrp, self.chr_p.d2d_rp)
