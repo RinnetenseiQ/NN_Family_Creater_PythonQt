@@ -120,8 +120,10 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
 
     def app_create_Btn_Clicked(self):
         if self.app_model_CB.currentText() == 0:
-            params = {"type": "ResNet50V2", "datapath": self.app_dataset_path_LE.text(),
-                      "save_to": self.saveTo_path_LE.text()}
+            params = {"model": "ResNet50V2",
+                      "datapath": self.app_dataset_path_LE.text(),
+                      "save_to": self.saveTo_path_LE.text(),
+                      "project_name": self.app_project_name_LE.text()}
             self.paramsQueue.append(params)
 
             pass

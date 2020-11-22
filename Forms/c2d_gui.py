@@ -18,6 +18,7 @@ from Structures.Convolutional.C2dRandomParams import C2dRandomParams
 from Structures.Dense.D2dRandomParams import D2dRandomParams
 import Support
 
+
 # from pycallgraph import PyCallGraph
 # from pycallgraph.output import GraphvizOutput
 
@@ -67,7 +68,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionProperties.triggered.connect(self.show_properties_Click)
         self.modelCheckpoint_ChB.stateChanged.connect(self.modelCheckpoint_checked)
         self.earlyStopping_ChB.stateChanged.connect(self.earlyStopping_checked)
-
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         # тут нужно спросить подтверждение и убить всех детей
@@ -131,6 +131,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def modelCheckpoint_TB_Click(self):
         self.model_checkpoint_window = ModelCheckpointDlg()
+        self.model_checkpoint_window.signal.connect(self.get_model_checkpoint_sett)
         self.model_checkpoint_window.exec()
         pass
 
@@ -148,6 +149,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.callbacks_handler.early_stopping = data
         print("ok")
 
+    @QtCore.pyqtSlot(object)
+    def get_model_checkpoint_sett(self, data: dict):
+        self.callbacks_handler.model_checkpoint = data
 
     def scheduler_TB_Click(self):
         pass
@@ -274,7 +278,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                   self.popSize_SB.value(), self.estimatingWay_CB.currentIndex(), 2,
                                   self.mutateRate_SB.value(), 1, 1)
         return gp
-
 
 
 # class SocketListener(Thread):

@@ -2,7 +2,7 @@ import sys
 
 import cv2
 import qdarkstyle
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QImage, QPixmap
 
@@ -22,6 +22,10 @@ class PredictC2DWindow(QtWidgets.QMainWindow, Ui_PredictC2DWindow):
         self.thread.started.connect(self.capture.run)
         # запустим поток
         self.thread.start()
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.capture
+        self.thread.quit()
 
     def open_c2d_model(self, path: str):
         pass
