@@ -176,7 +176,7 @@ class QueueProgramThread(Thread):
 
     def run(self):
         # while len(self.chromosome_params_queue) > 0:
-
+        #
         while True:
             if len(self.params_queue) != 0:
                 prog = None
