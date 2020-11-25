@@ -28,3 +28,8 @@ class CallbacksHandler:
         if self.active.get("model_checkpoint"): callbacks.append(ModelCheckpoint(**self.model_checkpoint))
 
         return callbacks
+
+if __name__ == "__main__":
+    handler1 = CallbacksHandler()
+    handler2 = CallbacksHandler(early_stopping={})
+    print("exp")

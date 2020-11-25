@@ -14,6 +14,7 @@ from Forms.early_stopping_dlg import EarlyStoppingDlg
 from Forms.model_checkpoint_dlg import ModelCheckpointDlg
 from Forms.property_dlg import PropertyWindow
 from NetworkRandomParams import NetworkRandomParams
+from Project_controller import Project_controller
 from Structures.Convolutional.C2dRandomParams import C2dRandomParams
 from Structures.Dense.D2dRandomParams import D2dRandomParams
 import Support
@@ -29,8 +30,9 @@ import Support
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
-    def __init__(self, paramsQueue: deque, tasks_window):
+    def __init__(self, paramsQueue: deque, tasks_window, project_controller: Project_controller):
         super().__init__()
+        self.project_controller = project_controller
         self.tasks_window = tasks_window
         self.paramsQueue = paramsQueue
         self.settings = QSettings()
@@ -83,7 +85,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     ################## Listener`s methods ###############
     ####### Buttons ########
     def search_Btn_Click(self):
-        self.paramsQueue.append(self.collectGUIParams())
+        params = self.collectGUIParams()
+        self.project_controller.params = params
+        self.paramsQueue.append(params)
 
     def train_Btn_Click(self):
         self.tasks_window.show()
@@ -279,38 +283,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                   self.mutateRate_SB.value(), 1, 1)
         return gp
 
-
-# class SocketListener(Thread):
-#     def __init__(self, mainwindow: MainWindow):
-#         self.sock = socket.socket()
-#         self.sock.bind(('localhost', 12246))
-#         self.sock.listen(1)
-#         self.mainwindow = mainwindow
-#         Thread.__init__(self)
-#
-#     def run(self) -> None:
-#         conn, addr = self.sock.accept()
-#         while True:
-#             data = conn.recv(20480).decode('UTF-8')
-#             if not data:
-#                 continue
-#             datalist = data.split('}')
-#             datalist.pop()
-#             for data in datalist:
-#                 data = eval(data + "}")
-#                 if data.get("codeword") == "geneticOutput_TE":
-#                     self.mainwindow.geneticOutput_TE.append(data.get("data"))
-#                     time.sleep(0.1)
-#                     self.mainwindow.geneticOutput_TE.verticalScrollBar().setValue(
-#                         self.mainwindow.geneticOutput_TE.verticalScrollBar().maximum())
-#                 elif data.get("codeword") == "chrOutput_TE":
-#                     self.mainwindow.chrOutput_TE.append(data.get("data"))
-#                 elif data.get("codeword") == "chr_plotting":
-#                     pass
-#                 elif data.get("codeword") == "search_plotting":
-#                     pass
-#                 elif data.get("codeword") == "search_PB":
-#                     self.mainwindow.progressBar.setValue(data.get("data"))
 
 
 if __name__ == '__main__':

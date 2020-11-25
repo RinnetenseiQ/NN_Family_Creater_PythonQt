@@ -9,8 +9,9 @@ from Forms.plot_ui import PlotWindow
 
 
 class TasksWindow(QtWidgets.QMainWindow, Ui_QueueWindow):
-    def __init__(self, plot_ui: PlotWindow, paramsQueue: deque):
+    def __init__(self, plot_ui: PlotWindow, paramsQueue: deque, project_controllers: list):
         super().__init__()
+        self.project_controllers = project_controllers
         self.paramsQueue = paramsQueue
         self.plot_ui = plot_ui
         self.settings = QSettings()
@@ -69,19 +70,6 @@ class TasksWindow(QtWidgets.QMainWindow, Ui_QueueWindow):
             self.errorneous_output_TE.setVisible(False)
             self.chr_output_TE.setVisible(True)
         pass
-
-    @QtCore.pyqtSlot(object)
-    def refresh_output(self, data: dict):
-        if data.get("target") == "geneticOutput_TE":
-            if data.get("action") == "appendText":
-                self.optimizin_output_TE.append(data.get("data"))
-            elif data.get("action") == "clear":
-                self.optimizin_output_TE.clear()
-        elif data.get("target") == "chrOutput_TE":
-            if data.get("action") == "appendText":
-                self.chr_output_TE.append(data.get("data"))
-            elif data.get("action") == "clear":
-                self.chr_output_TE.clear()
 
 
 if __name__ == '__main__':

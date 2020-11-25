@@ -1,4 +1,3 @@
-
 class C2dRandomParams:
     dropoutRange: int
     dropoutExist: bool
@@ -8,15 +7,18 @@ class C2dRandomParams:
     fPowRange: int
     layersRange: int
 
-    def __init__(self, layersRange: int, fPowRange,
-                 actIndexRange, activations, kernelSizeRange,
-                 dropoutExist, dropoutRange):
+    def __init__(self, layersRange: int = 5, fPowRange=None,
+                 actIndexRange=None, activations=None, kernelSizeRange=None,
+                 dropoutExist=False, dropoutRange=50):
         self.dropoutRange: int = dropoutRange
-        self.dropoutExist = dropoutExist
-        self.kernelSizeRange = kernelSizeRange
-        self.activations = activations
-        self.actIndexRange = actIndexRange
-        self.fPowRange = fPowRange
-        self.layersRange = layersRange
+        self.dropoutExist: bool = dropoutExist
+        self.kernelSizeRange: list = kernelSizeRange or [7, 7]
+        self.activations: list = activations or ["relu", "selu", "elu"]
+        self.actIndexRange: int = actIndexRange
+        self.fPowRange: list = fPowRange or [3, 5]
+        self.layersRange: int = layersRange
 
 
+if __name__ == "__main__":
+    v = C2dRandomParams()
+    print("exp")

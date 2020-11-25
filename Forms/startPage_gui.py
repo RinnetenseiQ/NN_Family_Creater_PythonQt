@@ -16,6 +16,7 @@ from Forms.c2d_gui import MainWindow
 from Forms.plot_ui import PlotWindow
 from Forms.predict_c2d_gui import PredictC2DWindow
 from Forms.task_manager_gui import TasksWindow
+from Project_controller import Project_controller
 
 
 class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
@@ -28,30 +29,16 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
         self.loadSettings()
         self.initWidgets()
 
+        self.project_controllers = []
+        #self.project_controller = Project_controller()
+        #self.project_controllers.append(Project_controller())
+
         self.paramsQueue = deque([])
         self.plots_window = PlotWindow()
-        self.tasks_window = TasksWindow(self.plots_window, self.paramsQueue)
+        self.tasks_window = TasksWindow(self.plots_window, self.paramsQueue, self.project_controllers)
 
         queue_program_thread = QueueProgramThread(self.paramsQueue)
         queue_program_thread.start()
-
-        ############### Commutators ################
-        ####### Slots-Signals #######
-        # создадим поток
-        self.thread = QtCore.QThread()
-        # создадим объект для выполнения кода в другом потоке
-        self.ui_handler = UIHandler()
-        # перенесём объект в другой поток
-        self.ui_handler.moveToThread(self.thread)
-        # после чего подключим все сигналы и слоты
-        self.ui_handler.signal.connect(self.tasks_window.refresh_output)
-        self.ui_handler.plot_signal.connect(self.plots_window.refreshFigure)
-        # self.ui_handler.signal.
-        # подключим сигнал старта потока к методу run у объекта, который должен выполнять код в другом потоке
-        self.thread.started.connect(self.ui_handler.run)
-        # запустим поток
-        self.thread.start()
-        #############################
 
         self.show()
 
@@ -85,7 +72,9 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
     def create_Btn_Click(self):
         if self.comboBox.currentIndex() == 0:
             if self.comboBox.currentIndex() == 0:
-                self.c2d_window = MainWindow(self.paramsQueue, self.tasks_window)
+                self.project_controller = Project_controller(mode=1, plot_ui=self.plots_window)
+                self.project_controllers.append(self.project_controller)
+                self.c2d_window = MainWindow(self.paramsQueue, self.tasks_window, self.project_controllers[-1])
                 self.c2d_window.show()
                 # self.hide()
 
@@ -138,35 +127,7 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
         pass
 
 
-class UIHandler(QtCore.QObject):
-    signal = QtCore.pyqtSignal(object)
-    plot_signal = QtCore.pyqtSignal(object)
 
-    def __init__(self):
-        self.sock = socket.socket()
-        self.sock.bind(('localhost', 12246))
-        self.sock.listen(1)
-        super().__init__()
-
-    def run(self):
-        conn, addr = self.sock.accept()
-        while True:
-            data = conn.recv(20480).decode('UTF-8')
-            if not data:
-                continue
-            datalist = data.split('&')
-            if datalist[-1] == "": datalist.pop()
-            for data in datalist:
-                # data = eval(data)
-                data = json.loads(data)
-                if data.get("action") == "reconnect":
-                    conn, addr = self.sock.accept()
-                    pass
-                elif data.get("target") == "plot_ui":
-                    self.plot_signal.emit(data)
-                else:
-                    self.signal.emit(data)
-            QtCore.QThread.msleep(1000)
 
 
 class QueueProgramThread(Thread):
