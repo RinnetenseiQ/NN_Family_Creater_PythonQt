@@ -1,6 +1,5 @@
 import socket
 from typing import Any
-
 from PyQt5 import QtCore
 
 from Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
@@ -9,10 +8,9 @@ import pandas as pd
 
 
 class Project_controller:
-    def __init__(self, mode: int, project_type: str = None,
-                 is_open: bool = False,
-                 optimising: str = None,
-                 plot_ui=None):
+    C2D_IMG_CLF_GEN = 1221000
+
+    def __init__(self, mode: int, is_open: bool = False, project_name: str = "project", plot_ui=None):
         """
         :param project_type: can be "c2d",
         :param is_open: to load before created project or no
@@ -44,10 +42,7 @@ class Project_controller:
 
         """
 
-        self.optimising = optimising
         self.is_open = is_open
-        self.project_type = project_type
-
         self.mode = mode
 
         self.is_run = False  # флаг, показывающий находится данный проект в данный момент в расчете
@@ -55,15 +50,10 @@ class Project_controller:
         self.is_in_queue = False  # флаг, показывающий, находится ли проект в очереди на расчет
         # если is_shown = False, то остальные два тоже False
 
-        # params init
-        self.computation_params = None
-        if is_open:
-            # load project params from file
-            pass
-        else:
-            pass
-
-
+        self.name = project_name
+        self.socket_port = 0
+        self.progress_percent = 0
+        self.params = self.get_project_params()
 
         self.Accuracies = pd.DataFrame()
         self.Params = pd.DataFrame()
@@ -93,7 +83,7 @@ class Project_controller:
         self.thread.start()
         #############################
 
-    #@QtCore.pyqtSlot(object)
+    # @QtCore.pyqtSlot(object)
     def data_received(self, data: dict):
         if data.get("action") == "chr_plotting":
             self.current_chr = json.loads(data.get("data"))
@@ -123,14 +113,45 @@ class Project_controller:
             # elif data.get("action") == "clear":
             #     self.chr_output_TE.clear()
 
+    # @QtCore.pyqtSlot(object)
+    def listen_control(self, action: str):
+        if action == "listen!":
+            # создадим поток
+            self.thread = QtCore.QThread()
+            # создадим объект для выполнения кода в другом потоке
+            self.ui_handler = UIHandler()
+            # перенесём объект в другой поток
+            self.ui_handler.moveToThread(self.thread)
+            # после чего подключим все сигналы и слоты
+            self.ui_handler.signal.connect(self.data_received)
+            self.ui_handler.plot_signal.connect(self.data_received)
+            # self.ui_handler.draw_signal.connect(plot_ui.refresh_figure)
+            # self.ui_handler.signal.
+            # подключим сигнал старта потока к методу run у объекта, который должен выполнять код в другом потоке
+            self.thread.started.connect(self.ui_handler.run)
+            # запустим поток
+            self.thread.start()
+        elif action == "switch_off":
+            # перестать слушать
+            pass
+
     def pause_Btn_Click(self):
         pass
 
     def get_project_params(self):
-        params = None
-        if self.mode == 1221000:
-            params = C2D_ChromosomeParams()
-        return params
+        if self.is_open:
+            pass
+        else:
+            params = None
+            if self.mode == Project_controller.C2D_IMG_CLF_GEN:  # 1221000
+                params = C2D_ChromosomeParams()
+            return params
+
+    def update_name(self, name):
+        self.name = name
+
+    def update_progress(self, progress):
+        self.progress_percent = progress
 
     def to_json(self):
         pass

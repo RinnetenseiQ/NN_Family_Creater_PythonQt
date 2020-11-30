@@ -5,7 +5,7 @@ from Structures.Dense.D2dRandomParams import D2dRandomParams
 
 class C2D_ChromosomeParams:
     def __init__(self, nrp: NetworkRandomParams = None,
-                 c2d_rp: C2dRandomParams = None,
+                 c2d_rp: C2dRandomParams = C2dRandomParams(),
                  d2d_rp: D2dRandomParams = None,
                  genEpoch=10, selection=10, popSize=5,
                  assessmentWay=0, percent=70,

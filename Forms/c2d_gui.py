@@ -30,10 +30,9 @@ import Support
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
-    def __init__(self, paramsQueue: deque, tasks_window, project_controller: Project_controller):
+    def __init__(self, paramsQueue: deque, project_controller: Project_controller):
         super().__init__()
         self.project_controller = project_controller
-        self.tasks_window = tasks_window
         self.paramsQueue = paramsQueue
         self.settings = QSettings()
         self.callbacks_handler = CallbacksHandler()
@@ -47,6 +46,61 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         ############## Widgets Init #################
         self.lf_CCE_ChB.setChecked(True)
+
+        self.connect_all()
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        # тут нужно спросить подтверждение и убить всех детей
+        # qApp.quit()
+        self.close()
+
+    def loadSettings(self):
+        self.DatasetPath_LE.setText(self.settings.value("datasetPath", "C:/", type=str))
+        self.ModelPath_LE.setText(self.settings.value("modelsPath", "C:/", type=str))
+        self.Labels_LE.setText(self.settings.value("labelPath", "C:/", type=str))
+        self.PlotsPath_LE.setText(self.settings.value("plotPath", "C:/", type=str))
+
+        x_kernel, y_kernel = self.project_controller.params.c2d_rp.kernelSizeRange
+        self.xKernel_SB.setValue(x_kernel)
+        self.yKernel_SB.setValue(y_kernel)
+        self.maxConv_SB.setValue(self.project_controller.params.c2d_rp.layersRange)
+        min_filters, max_filters = self.project_controller.params.c2d_rp.fPowRange
+        self.min_filersPowIndex_SB.setValue(min_filters)
+        self.max_filersPowIndex_SB.setValue(max_filters)
+        self.cDropout_ChB.setChecked(self.project_controller.params.c2d_rp.dropoutExist)
+        self.cMaxDropout_SB.setValue(self.project_controller.params.c2d_rp.dropoutRange)
+
+        self.maxDense_SB.setValue(self.project_controller.params.d2d_rp.layersNumbRange)
+        min_neurons, max_neurons = self.project_controller.params.d2d_rp.firstNeuronsRange
+        self.min_neuronsPowIndex_SB.setValue(min_neurons)
+        self.max_neuronsPowIndex_SB.setValue(max_neurons)
+        self.dDropout_ChB.setChecked(self.project_controller.params.d2d_rp.dropoutExist)
+        self.dMaxDropout_SB.setValue(self.project_controller.params.d2d_rp.dropoutRange)
+
+        self.netName_LE.setText(self.project_controller.name)
+        self.evolEpoch_SB.setValue(self.project_controller.params.genEpoch)
+        self.popSize_SB.setValue(self.project_controller.params.popSize)
+        copy, cross, mutate = self.project_controller.params.selection
+        self.copy_SB.setValue(copy)
+        self.cross_SP.setValue(cross)
+        self.mutate_SB.setValue(mutate)
+
+        self.set_activations_state()
+        self.set_optimizers()
+        self.set_loss()
+        self.set_callbacks()
+
+        self.batchSize_SB.setValue(self.project_controller.params.nrp.batchSize)
+        self.networkEpoch_SB.setValue(self.project_controller.params.nrp.trainEpoch)
+        self.DatasetPath_LE.setText(self.project_controller.params.nrp.dataPath)
+        # убрать поля путей для сохранения меток, моделей и графиков
+        # добавить поле для изменения месторасположения проекта
+        self.constLR_ChB.setChecked(True)
+        self.minLR_dSB.setValue(self.project_controller.params.nrp.LR_Range[0])
+        self.maxLR_dSB.setValue(self.project_controller.params.nrp.LR_Range[1])
+
+
+    def connect_all(self):
 
         ############## Widgets Listeners ############
         ###### Buttons ######
@@ -71,17 +125,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.modelCheckpoint_ChB.stateChanged.connect(self.modelCheckpoint_checked)
         self.earlyStopping_ChB.stateChanged.connect(self.earlyStopping_checked)
 
-    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        # тут нужно спросить подтверждение и убить всех детей
-        # qApp.quit()
-        self.close()
-
-    def loadSettings(self):
-        self.DatasetPath_LE.setText(self.settings.value("datasetPath", "C:/", type=str))
-        self.ModelPath_LE.setText(self.settings.value("modelsPath", "C:/", type=str))
-        self.Labels_LE.setText(self.settings.value("labelPath", "C:/", type=str))
-        self.PlotsPath_LE.setText(self.settings.value("plotPath", "C:/", type=str))
-
     ################## Listener`s methods ###############
     ####### Buttons ########
     def search_Btn_Click(self):
@@ -90,7 +133,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.paramsQueue.append(params)
 
     def train_Btn_Click(self):
-        self.tasks_window.show()
         pass
 
     def datasetPath_TB_Click(self):
@@ -227,41 +269,41 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.dTReLU_ChB.isChecked(): dActivations.append("TReLU")
 
         optimizers = []
-        if self.optAdadelta_ChB.isChecked(): optimizers.append("adadelta")
-        if self.optAdagrad_ChB.isChecked(): optimizers.append("adagrad")
-        if self.optAdam_ChB.isChecked(): optimizers.append("adam")
-        if self.optAdamax_ChB.isChecked(): optimizers.append("adamax")
-        if self.optNadam_ChB.isChecked(): optimizers.append("nadam")
-        if self.optRMSprop_ChB.isChecked(): optimizers.append("rmsprop")
-        if self.optSGD_ChB.isChecked(): optimizers.append("sgd")
+        # if self.optAdadelta_ChB.isChecked(): optimizers.append("adadelta")
+        # if self.optAdagrad_ChB.isChecked(): optimizers.append("adagrad")
+        # if self.optAdam_ChB.isChecked(): optimizers.append("adam")
+        # if self.optAdamax_ChB.isChecked(): optimizers.append("adamax")
+        # if self.optNadam_ChB.isChecked(): optimizers.append("nadam")
+        # if self.optRMSprop_ChB.isChecked(): optimizers.append("rmsprop")
+        # if self.optSGD_ChB.isChecked(): optimizers.append("sgd")
 
         loss_func = []
-        if self.lf_BCE_ChB.isChecked(): loss_func.append("binary crossentropy")
-        if self.lf_CCE_ChB.isChecked(): loss_func.append("categorical crossentropy")
-        if self.lf_cHingle_ChB.isChecked(): loss_func.append("categorical hingle")
-        if self.lf_CosProx_ChB.isChecked(): loss_func.append("Cosine proximity")
-        if self.lf_Hingle_ChB.isChecked(): loss_func.append("hinge")
-        if self.lf_KDL_ChB.isChecked(): loss_func.append("kdl")
-        if self.lf_Logcosh.isChecked(): loss_func.append("logcosh")
-        if self.lf_MAE_ChB.isChecked(): loss_func.append("mae")
-        if self.lf_MAPE_ChB.isChecked(): loss_func.append("mape")
-        if self.lf_MSE_ChB.isChecked(): loss_func.append("mse")
-        if self.lf_MSLE_ChB.isChecked(): loss_func.append("msle")
-        if self.lf_Poisson_ChB.isChecked(): loss_func.append("poisson")
-        if self.lf_sCCE_ChB.isChecked(): loss_func.append("sparse categorical crossentropy")
-        if self.lf_sqHingle_ChB.isChecked(): loss_func.append("squared hinge")
+        # if self.lf_BCE_ChB.isChecked(): loss_func.append("binary crossentropy")
+        # if self.lf_CCE_ChB.isChecked(): loss_func.append("categorical crossentropy")
+        # if self.lf_cHingle_ChB.isChecked(): loss_func.append("categorical hingle")
+        # if self.lf_CosProx_ChB.isChecked(): loss_func.append("Cosine proximity")
+        # if self.lf_Hingle_ChB.isChecked(): loss_func.append("hinge")
+        # if self.lf_KDL_ChB.isChecked(): loss_func.append("kdl")
+        # if self.lf_Logcosh.isChecked(): loss_func.append("logcosh")
+        # if self.lf_MAE_ChB.isChecked(): loss_func.append("mae")
+        # if self.lf_MAPE_ChB.isChecked(): loss_func.append("mape")
+        # if self.lf_MSE_ChB.isChecked(): loss_func.append("mse")
+        # if self.lf_MSLE_ChB.isChecked(): loss_func.append("msle")
+        # if self.lf_Poisson_ChB.isChecked(): loss_func.append("poisson")
+        # if self.lf_sCCE_ChB.isChecked(): loss_func.append("sparse categorical crossentropy")
+        # if self.lf_sqHingle_ChB.isChecked(): loss_func.append("squared hinge")
 
         callbacks = []
-        if self.modelCheckpoint_ChB.isChecked(): callbacks.append(0)
-        if self.tensorBoard_ChB.isChecked(): callbacks.append(1)
-        if self.earlyStopping_ChB.isChecked(): callbacks.append(2)
-        if self.scheduler_ChB.isChecked(): callbacks.append(3)
-        if self.terminateNaN_ChB.isChecked(): callbacks.append(4)
-        if self.ReduceLR_ChB.isChecked(): callbacks.append(5)
-        if self.remoteMonitor_ChB.isChecked(): callbacks.append(6)
-        if self.lambda_ChB.isChecked(): callbacks.append(7)
-        if self.CSVLogger_ChB.isChecked(): callbacks.append(8)
-        if self.ProgbarLogger_ChB.isChecked(): callbacks.append(9)
+        # if self.modelCheckpoint_ChB.isChecked(): callbacks.append(0)
+        # if self.tensorBoard_ChB.isChecked(): callbacks.append(1)
+        # if self.earlyStopping_ChB.isChecked(): callbacks.append(2)
+        # if self.scheduler_ChB.isChecked(): callbacks.append(3)
+        # if self.terminateNaN_ChB.isChecked(): callbacks.append(4)
+        # if self.ReduceLR_ChB.isChecked(): callbacks.append(5)
+        # if self.remoteMonitor_ChB.isChecked(): callbacks.append(6)
+        # if self.lambda_ChB.isChecked(): callbacks.append(7)
+        # if self.CSVLogger_ChB.isChecked(): callbacks.append(8)
+        # if self.ProgbarLogger_ChB.isChecked(): callbacks.append(9)
 
         nrp = NetworkRandomParams(self.constLR_ChB.isChecked(),
                                   [self.minLR_dSB.value(), self.maxLR_dSB.value()],
@@ -283,6 +325,72 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                   self.mutateRate_SB.value(), 1, 1)
         return gp
 
+    def set_activations_state(self):
+        cActivations = self.project_controller.params.c2d_rp.activations
+        if "relu" in cActivations: self.cReLU_ChB.setChecked(True)
+        if "softmax" in cActivations: self.cSoftMax_ChB.setChecked(True)
+        if "Leaky ReLU" in cActivations: self.cLReLU_ChB.setChecked(True)
+        if "softsign" in cActivations: self.cSoftSign_ChB.setChecked(True)
+        if "sigmoid" in cActivations: self.cSigmoid_ChB.setChecked(True)
+        if "elu" in cActivations: self.cELU_ChB.setChecked(True)
+        if "selu" in cActivations: self.cSELU_ChB.setChecked(True)
+        if "softplus" in cActivations: self.cSoftPlus_ChB.setChecked(True)
+        if "tang" in cActivations: self.cTanh_ChB.setChecked(True)
+        if "PReLu" in cActivations: self.cPReLU_ChB.setChecked(True)
+        if "TReLU" in cActivations: self.cTReLU_ChB.setChecked(True)
+
+        dActivations = self.project_controller.params.d2d_rp.activations
+        if "relu" in dActivations: self.dReLU_ChB.setChecked(True)
+        if "softmax" in dActivations: self.dSoftMax_ChB.setChecked(True)
+        if "Leaky ReLU" in dActivations: self.dLReLU_ChB.setChecked(True)
+        if "softsign" in dActivations: self.dSoftSign_ChB.setChecked(True)
+        if "sigmoid" in dActivations: self.dSigmoid_ChB.setChecked(True)
+        if "elu" in dActivations: self.dELU_ChB.setChecked(True)
+        if "selu" in dActivations: self.dSELU_ChB.setChecked(True)
+        if "softplus" in dActivations: self.dSoftPlus_ChB.setChecked(True)
+        if "tang" in dActivations: self.dTanh_ChB.setChecked(True)
+        if "PReLu" in dActivations: self.dPReLU_ChB.setChecked(True)
+        if "TReLU" in dActivations: self.dTReLU_ChB.setChecked(True)
+
+    def set_optimizers(self):
+        optimizers = self.project_controller.params.nrp.optimizers
+        if "adadelta" in optimizers: self.optAdadelta_ChB.setChecked(True)
+        if "adagrad" in optimizers: self.optAdadelta_ChB.setChecked(True)
+        if "adam" in optimizers: self.optAdadelta_ChB.setChecked(True)
+        if "adamax" in optimizers: self.optAdadelta_ChB.setChecked(True)
+        if "nadam" in optimizers: self.optAdadelta_ChB.setChecked(True)
+        if "rmsprop" in optimizers: self.optAdadelta_ChB.setChecked(True)
+        if "sgd" in optimizers: self.optAdadelta_ChB.setChecked(True)
+
+    def set_loss(self):
+        loss = self.project_controller.params.nrp.loss_func
+        if "binary crossentropy" in loss: self.lf_BCE_ChB.setChecked(True)
+        if "categorical crossentropy" in loss: self.lf_CCE_ChB.setChecked(True)
+        if "categorical hingle" in loss: self.lf_cHingle_ChB.setChecked(True)
+        if "Cosine proximity" in loss: self.lf_CosProx_ChB.setChecked(True)
+        if "hinge" in loss: self.lf_Hingle_ChB.setChecked(True)
+        if "kld" in loss: self.lf_KDL_ChB.setChecked(True)
+        if "logcosh" in loss: self.lf_Logcosh.setChecked(True)
+        if "mae" in loss: self.lf_MAE_ChB.setChecked(True)
+        if "mape" in loss: self.lf_MAPE_ChB.setChecked(True)
+        if "mse" in loss: self.lf_MSE_ChB.setChecked(True)
+        if "msle" in loss: self.lf_MSLE_ChB.setChecked(True)
+        if "poisson" in loss: self.lf_Poisson_ChB.setChecked(True)
+        if "sparse categorical crossentropy" in loss: self.lf_sCCE_ChB.setChecked(True)
+        if "squared hinge" in loss: self.lf_sqHingle_ChB.setChecked(True)
+
+    def set_callbacks(self):
+        self.callbacks_handler = self.project_controller.params.nrp.callbacks_handler
+        if self.callbacks_handler.active.get("early_stopping"): self.earlyStopping_ChB.setChecked(True)
+        if self.callbacks_handler.active.get("model_checkpoint"): self.modelCheckpoint_ChB.setChecked(True)
+        if self.callbacks_handler.active.get("tensorboard"): self.tensorBoard_ChB.setChecked(True)
+        if self.callbacks_handler.active.get("LRScheduler"): self.earlyStopping_ChB.setChecked(True)
+        if self.callbacks_handler.active.get("terminateNaN"): self.earlyStopping_ChB.setChecked(True)
+        if self.callbacks_handler.active.get("reduceLR_onPlato"): self.earlyStopping_ChB.setChecked(True)
+        if self.callbacks_handler.active.get("remote_monitor"): self.earlyStopping_ChB.setChecked(True)
+        if self.callbacks_handler.active.get("lambda_callback"): self.earlyStopping_ChB.setChecked(True)
+        if self.callbacks_handler.active.get("CSVLogger"): self.earlyStopping_ChB.setChecked(True)
+        if self.callbacks_handler.active.get("progbar_logger"): self.earlyStopping_ChB.setChecked(True)
 
 
 if __name__ == '__main__':

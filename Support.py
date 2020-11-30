@@ -60,6 +60,13 @@ def send(target: str, action: str, data: Any, socket):
     socket.send(bytes(data, encoding="utf-8"))
 
 
+def send_remaster(action: str, data: Any, socket):
+    data = {"action": action, "data": data}
+    data = json.dumps(data)
+    data += "&"
+    socket.send(bytes(data, encoding="utf-8"))
+
+
 def load_c2d_images(path):
     size_X = 224
     size_Y = 224
