@@ -72,9 +72,9 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ax3.clear()
         for i in self.project_controller.Accuracies.columns:
             if i != "epoch":
-                self.ax3.plot(self.project_controller.Accuracies[i].values, self.project_controller.Params[i].values,
+                self.ax3.plot(self.project_controller.Accuracies[i].values, self.project_controller.params_count[i].values,
                               label=i)
-                self.ax3.scatter(self.project_controller.Accuracies[i].values, self.project_controller.Params[i].values)
+                self.ax3.scatter(self.project_controller.Accuracies[i].values, self.project_controller.params_count[i].values)
 
         setOneAxesProperties(self.ax3, "Accuracy - Params", "Accuracy", "Params")
         self.canvas.draw()
@@ -100,12 +100,12 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def redraw_ax5(self):
         self.ax5.clear()
-        for i in self.project_controller.Params.columns:
+        for i in self.project_controller.params_count.columns:
             if i != "epoch":
-                self.ax5.plot(self.project_controller.Params["epoch"].values, self.project_controller.Params[i].values,
+                self.ax5.plot(self.project_controller.params_count["epoch"].values, self.project_controller.params_count[i].values,
                               label=i)
-                self.ax5.scatter(self.project_controller.Params["epoch"].values,
-                                 self.project_controller.Params[i].values)
+                self.ax5.scatter(self.project_controller.params_count["epoch"].values,
+                                 self.project_controller.params_count[i].values)
         setOneAxesProperties(self.ax5, "Params - Epoch", "Epoch", "Params")
         self.canvas.draw()
         pass

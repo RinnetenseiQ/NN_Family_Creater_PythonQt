@@ -13,7 +13,7 @@ from Forms.Parents.c2d_gui_parent import Ui_MainWindow
 from Forms.early_stopping_dlg import EarlyStoppingDlg
 from Forms.model_checkpoint_dlg import ModelCheckpointDlg
 from Forms.property_dlg import PropertyWindow
-from NetworkRandomParams import NetworkRandomParams
+from Structures.NetworkRandomParams import NetworkRandomParams
 from Project_controller import Project_controller
 from Structures.Convolutional.C2dRandomParams import C2dRandomParams
 from Structures.Dense.D2dRandomParams import D2dRandomParams
@@ -60,6 +60,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Labels_LE.setText(self.settings.value("labelPath", "C:/", type=str))
         self.PlotsPath_LE.setText(self.settings.value("plotPath", "C:/", type=str))
 
+        self.set_activations_state()
+        self.set_optimizers()
+        self.set_loss()
+        self.set_callbacks()
+
         x_kernel, y_kernel = self.project_controller.params.c2d_rp.kernelSizeRange
         self.xKernel_SB.setValue(x_kernel)
         self.yKernel_SB.setValue(y_kernel)
@@ -85,11 +90,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.cross_SP.setValue(cross)
         self.mutate_SB.setValue(mutate)
 
-        self.set_activations_state()
-        self.set_optimizers()
-        self.set_loss()
-        self.set_callbacks()
-
         self.batchSize_SB.setValue(self.project_controller.params.nrp.batchSize)
         self.networkEpoch_SB.setValue(self.project_controller.params.nrp.trainEpoch)
         self.DatasetPath_LE.setText(self.project_controller.params.nrp.dataPath)
@@ -98,7 +98,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.constLR_ChB.setChecked(True)
         self.minLR_dSB.setValue(self.project_controller.params.nrp.LR_Range[0])
         self.maxLR_dSB.setValue(self.project_controller.params.nrp.LR_Range[1])
-
 
     def connect_all(self):
 
@@ -110,6 +109,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ModelsPath_TB.clicked.connect(self.modelsPath_TB_Click)
         self.LabelPath_TB.clicked.connect(self.labelPath_TB_Click)
         self.PlotPath_TB.clicked.connect(self.plotPath_TB_Click)
+
+
+        self.actionProperties.triggered.connect(self.show_properties_Click)
+        self.modelCheckpoint_ChB.stateChanged.connect(self.modelCheckpoint_checked)
+        self.earlyStopping_ChB.stateChanged.connect(self.earlyStopping_checked)
+
+        #######Callbacks#######
+        self.earlyStopping_ChB.stateChanged.connect(self.earlyStopping_checked)
+        self.modelCheckpoint_ChB.stateChanged.connect(self.modelCheckpoint_checked)
+        self.tensorBoard_ChB.stateChanged.connect(self.tensorboard_checked)
+        self.scheduler_ChB.stateChanged.connect(self.LRScheduler_checked)
+        self.terminateNaN_ChB.stateChanged.connect(self.terminateNaN_checked)
+        self.lambda_ChB.stateChanged.connect(self.lambda_callback_checked)
+        self.CSVLogger_ChB.stateChanged.connect(self.CSVLogger_checked)
+        self.ProgbarLogger_ChB.stateChanged.connect(self.progbar_logger_checked)
+        self.remoteMonitor_ChB.stateChanged.connect(self.remote_monitor_checked)
+        self.ReduceLR_ChB.stateChanged.connect(self.reduceLR_onPlato_checked)
+
         self.modelCheckpoint_TB.clicked.connect(self.modelCheckpoint_TB_Click)
         self.tensorBoard_TB.clicked.connect(self.tensorBoard_TB_Click)
         self.earlyStopping_TB.clicked.connect(self.earlyStopping_TB_Click)
@@ -120,17 +137,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lambda_TB.clicked.connect(self.lambda_TB_Click)
         self.CSVLogger_TB.clicked.connect(self.CSVLogger_TB_Click)
         self.ProgbarLogger_TB.clicked.connect(self.progbarLogger_TB_Click)
-
-        self.actionProperties.triggered.connect(self.show_properties_Click)
-        self.modelCheckpoint_ChB.stateChanged.connect(self.modelCheckpoint_checked)
-        self.earlyStopping_ChB.stateChanged.connect(self.earlyStopping_checked)
+        ########################
 
     ################## Listener`s methods ###############
     ####### Buttons ########
     def search_Btn_Click(self):
-        params = self.collectGUIParams()
-        self.project_controller.params = params
-        self.paramsQueue.append(params)
+        #params = self.collectGUIParams()
+        #self.project_controller.params = params
+
+        self.paramsQueue.append(self.project_controller)
 
     def train_Btn_Click(self):
         pass
@@ -141,6 +156,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if dirlist == "":
             self.DatasetPath_LE.setText(self.settings.value("datasetPath", "C:/", type=str))
         else:
+            self.project_controller.params.nrp.dataPath = dirlist
             self.DatasetPath_LE.setText(dirlist)
             self.settings.setValue("datasetPath", dirlist)
             self.settings.sync()
@@ -151,6 +167,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if dirlist == "":
             self.ModelPath_LE.setText(self.settings.value("modelsPath", "C:/", type=str))
         else:
+            self.project_controller.params.nrp.modelPath = dirlist
             self.ModelPath_LE.setText(dirlist)
             self.settings.setValue("modelsPath", dirlist)
             self.settings.sync()
@@ -161,6 +178,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if dirlist == "":
             self.Labels_LE.setText(self.settings.value("labelPath", "C:/", type=str))
         else:
+            self.project_controller.params.nrp.labelPath = dirlist
             self.Labels_LE.setText(dirlist)
             self.settings.setValue("labelPath", dirlist)
             self.settings.sync()
@@ -168,13 +186,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def plotPath_TB_Click(self):
         dirlist = QFileDialog.getExistingDirectory(self, "Get Plots folder",
                                                    self.settings.value("plotPath", "C:/", type=str))
+
         if dirlist == "":
+            # лишнее условие, можно упростить
             self.PlotsPath_LE.setText(self.settings.value("plotPath", "C:/", type=str))
         else:
+            self.project_controller.params.nrp.plotPath = dirlist
             self.PlotsPath_LE.setText(dirlist)
             self.settings.setValue("plotPath", dirlist)
             self.settings.sync()
 
+    ########### Callbacks properties Listeners #############
     def modelCheckpoint_TB_Click(self):
         self.model_checkpoint_window = ModelCheckpointDlg()
         self.model_checkpoint_window.signal.connect(self.get_model_checkpoint_sett)
@@ -225,6 +247,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.propertyWindow.exec()
         pass
 
+    ###################################################
+
+    ######### Callbacks checked listeners #######
     def modelCheckpoint_checked(self):
         if self.modelCheckpoint_ChB.isChecked():
             self.callbacks_handler.active["model_checkpoint"] = True
@@ -238,6 +263,64 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.callbacks_handler.active["early_stopping"] = False
         pass
+
+    def tensorboard_checked(self):
+        if self.tensorBoard_ChB.isChecked():
+            self.callbacks_handler.active["tensorboard"] = True
+        else:
+            self.callbacks_handler.active["tensorboard"] = False
+        pass
+
+    def LRScheduler_checked(self):
+        if self.scheduler_ChB.isChecked():
+            self.callbacks_handler.active["LRScheduler"] = True
+        else:
+            self.callbacks_handler.active["LRScheduler"] = False
+        pass
+
+    def terminateNaN_checked(self):
+        if self.terminateNaN_ChB.isChecked():
+            self.callbacks_handler.active["terminateNaN"] = True
+        else:
+            self.callbacks_handler.active["terminateNaN"] = False
+        pass
+
+    def reduceLR_onPlato_checked(self):
+        if self.ReduceLR_ChB.isChecked():
+            self.callbacks_handler.active["reduceLR_onPlato"] = True
+        else:
+            self.callbacks_handler.active["reduceLR_onPlato"] = False
+        pass
+
+    def remote_monitor_checked(self):
+        if self.remoteMonitor_ChB.isChecked():
+            self.callbacks_handler.active["remote_monitor"] = True
+        else:
+            self.callbacks_handler.active["remote_monitor"] = False
+        pass
+
+    def lambda_callback_checked(self):
+        if self.lambda_ChB.isChecked():
+            self.callbacks_handler.active["lambda_callback"] = True
+        else:
+            self.callbacks_handler.active["lambda_callback"] = False
+        pass
+
+    def CSVLogger_checked(self):
+        if self.CSVLogger_ChB.isChecked():
+            self.callbacks_handler.active["CSVLogger"] = True
+        else:
+            self.callbacks_handler.active["CSVLogger"] = False
+        pass
+
+    def progbar_logger_checked(self):
+        if self.ProgbarLogger_ChB.isChecked():
+            self.callbacks_handler.active["progbar_logger"] = True
+        else:
+            self.callbacks_handler.active["progbar_logger"] = False
+        pass
+
+    ################################################
 
     ################# Logic #############################
     def collectGUIParams(self):
@@ -325,6 +408,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                   self.mutateRate_SB.value(), 1, 1)
         return gp
 
+    ########## Forms data setters ##########
     def set_activations_state(self):
         cActivations = self.project_controller.params.c2d_rp.activations
         if "relu" in cActivations: self.cReLU_ChB.setChecked(True)
@@ -391,6 +475,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.callbacks_handler.active.get("lambda_callback"): self.earlyStopping_ChB.setChecked(True)
         if self.callbacks_handler.active.get("CSVLogger"): self.earlyStopping_ChB.setChecked(True)
         if self.callbacks_handler.active.get("progbar_logger"): self.earlyStopping_ChB.setChecked(True)
+    ########################################
 
 
 if __name__ == '__main__':

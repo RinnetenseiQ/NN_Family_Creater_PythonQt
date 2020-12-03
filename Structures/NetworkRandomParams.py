@@ -1,6 +1,7 @@
 from PyQt5.QtCore import QSettings
 
 import Support
+from Callbacks.CallbacksHandler import CallbacksHandler
 
 
 class NetworkRandomParams:
@@ -9,7 +10,7 @@ class NetworkRandomParams:
                  networkName="", optimizers=None, loss_func=None,
                  trainEpoch=2, batchSize=16, callbacks_handler=None):
         self.settings = QSettings()
-        self.callbacks_handler = callbacks_handler
+        self.callbacks_handler = callbacks_handler or CallbacksHandler()
         self.batchSize = batchSize
         self.trainEpoch = trainEpoch
         self.loss_func = loss_func or ["categorical crossentropy"]

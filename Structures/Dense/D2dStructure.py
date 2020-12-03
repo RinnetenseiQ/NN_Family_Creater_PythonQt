@@ -1,7 +1,7 @@
 from Structures.Dense.D2dRandomParams import D2dRandomParams
 import math
 from Structures.Dense.D2dLayer import D2dLayer
-from NetworkRandomParams import NetworkRandomParams
+from Structures.NetworkRandomParams import NetworkRandomParams
 import Support
 import random
 

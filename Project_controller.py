@@ -56,7 +56,7 @@ class Project_controller:
         self.params = self.get_project_params()
 
         self.Accuracies = pd.DataFrame()
-        self.Params = pd.DataFrame()
+        self.params_count = pd.DataFrame()
         self.Assessments = pd.DataFrame()
 
         self.current_chr = {}
@@ -145,6 +145,7 @@ class Project_controller:
             params = None
             if self.mode == Project_controller.C2D_IMG_CLF_GEN:  # 1221000
                 params = C2D_ChromosomeParams()
+                #self.callbacks_handler
             return params
 
     def update_name(self, name):

@@ -43,7 +43,7 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
 
         # self.tasks_window = TasksWindow(self.plots_window, self.paramsQueue, self.active_project_controllers)
 
-        queue_program_thread = QueueProgramThread(self.paramsQueue)
+        queue_program_thread = QueueProgramThread(self.project_queue)
         queue_program_thread.start()
 
         self.show()
@@ -106,8 +106,8 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
             if self.opt_method_CB.currentIndex() == 0:
                 self.create_project_controller(Project_controller.C2D_IMG_CLF_GEN, self.opt_project_name_LE.text())
                 print("")
-                # self.c2d_window = MainWindow(self.paramsQueue, self.active_project_controllers[-1])
-                # self.c2d_window.show()
+                self.c2d_window = MainWindow(self.project_queue, self.project_controllers[-1])
+                self.c2d_window.show()
                 pass
                 # self.hide()
 
@@ -118,7 +118,7 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
                                                      project_name=name,
                                                      plot_ui=self.plots_window)
         temp_project_controller.is_shown = True
-        temp_project_controller.socket_port = self.get_uniq_socket_port()
+        #temp_project_controller.socket_port = self.get_uniq_socket_port()
         self.project_controllers.append(temp_project_controller)
         self.update_projects_list()
 
@@ -217,23 +217,24 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
 
 
 class QueueProgramThread(Thread):
-    def __init__(self, params_queue: deque):
+
+    def __init__(self, project_queue: deque):
         super().__init__()
-        self.params_queue = params_queue
+        self.project_queue = project_queue
 
     def run(self):
         # while len(self.chromosome_params_queue) > 0:
         #
         while True:
-            if len(self.params_queue) != 0:
+            if len(self.project_queue) != 0:
                 prog = None
-                params = self.params_queue.popleft()
-                if params.__class__.__name__ == "C2D_ChromosomeParams":
-                    prog = GeneticProgramProcess(params)
-                elif type(params) == dict:
-                    pass
-                elif params == "custom":  # переделать под custom
-                    pass
+                project_controller = self.project_queue.popleft()
+                if project_controller.mode == Project_controller.C2D_IMG_CLF_GEN:
+                    prog = GeneticProgramProcess(project_controller.params)
+                # elif type(params) == dict:
+                #     pass
+                # elif params == "custom":  # переделать под custom
+                #     pass
 
                 prog.run()
                 # процесс стопит поток или нет? Yes
