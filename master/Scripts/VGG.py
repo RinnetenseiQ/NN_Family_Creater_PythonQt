@@ -1,40 +1,66 @@
 # импортируем бэкенд Agg из matplotlib для сохранения графиков на диск
+import json
+import os
+import pickle
+import random
+import socket
 from typing import Dict, Any, Union
 
+import cv2
 import matplotlib
+import numpy as np
+from master.Callbacks.FitLogger import FitLogger
+from master.Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
+from master.Structures.Network import Network
+from imutils import paths
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split
 # подключаем необходимые пакеты
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Flatten
+from tensorflow.keras import backend
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, ZeroPadding2D
+from tensorflow.keras.layers import Dense, Dropout, Flatten
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras import backend
-from imutils import paths
-import numpy as np
-import random
-import pickle
-import cv2
-import os
 
-import socket
-import json
-
-from Chromosomes.C2dChromosome import C2dChromosome
-from Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
-from Callbacks.FitLogger import FitLogger
 import Support
+from Support import send_remaster
 
 matplotlib.use("Agg")
 
 
+# class VGG(Process):
 class VGG:
-    def __init__(self, chromosome: C2dChromosome, chr_p: C2D_ChromosomeParams, sock: socket):
+    def __init__(self, network: Network, chr_p: C2D_ChromosomeParams, project_controller_port: int,
+                 optimising_port: int, project_path='../Projects/project'):
+
+        self.project_path = project_path
         self.chr_p = chr_p
-        self.chromosome = chromosome
-        self.sock = sock
+        self.network = network
+        # port = self.sock_network.getsockname()[1]
+        self.opt_send_socket = socket.socket()
+        self.opt_send_socket.connect(("localhost", optimising_port))
+
+        self.pc_send_socket = socket.socket()
+        try:
+            self.pc_send_socket.connect(("localhost", project_controller_port))
+        except ConnectionRefusedError as e:
+            print("Conn")
+            print(project_controller_port)
+            with open("../../report.txt", "a") as f:
+                f.write("VGG:\n")
+                f.write("project_controller_port = " + str(project_controller_port) + "\n")
+                f.write("========================\n")
+        except Exception:
+            print("Ex")
+            print(project_controller_port)
+            pass
+
+        super().__init__()
+
+    def run(self) -> None:
+        self.learn()
 
     def learn(self):
         # изменить название
@@ -43,17 +69,28 @@ class VGG:
             model = self.createModel()
             history = self.train(model, trainX, trainY, testX, testY)
             summary = self.estimateModel(history, model, testX, testY, lb)
-            #if summary == [0, 0]: summary = [0, {"accuracy": 0}]
-            self.saveModel(model, lb)
-            return summary
+            # if summary == [0, 0]: summary = [0, {"accuracy": 0}]
+            send_remaster("summary", summary, self.opt_send_socket)
+            send_remaster("accept", "", self.pc_send_socket)
+            self.opt_send_socket.close()
+            self.pc_send_socket.close()
+            #self.saveModel(model, lb)
+
+            # return summary
         except MemoryError:
             print("Memory Error")
             summary = [0, {"accuracy": 0}]
-            return summary
+            send_remaster("summary", summary, self.opt_send_socket)
+            self.opt_send_socket.close()
+            self.pc_send_socket.close()
+            # return summary
         except Exception:
             print("Exeption")
             summary = [0, {"accuracy": 0}]
-            return summary
+            send_remaster("summary", summary, self.opt_send_socket)
+            self.opt_send_socket.close()
+            self.pc_send_socket.close()
+            # return summary
         ####### For testing ########
         # lb, trainX, testX, trainY, testY = self.loadData()
         # model = self.createModel()
@@ -66,7 +103,7 @@ class VGG:
     def loadData(self):
         # инициализируем данные и метки
         print("[INFO] loading images...")
-        Support.send("chrOutput_TE", "appendText", "[INFO] loading images...", self.sock)
+        # Support.send("chrOutput_TE", "appendText", "[INFO] loading images...", self.sock)
         data = []
         labels = []
         # backend.set_floatx('float16')
@@ -112,35 +149,51 @@ class VGG:
     def createModel(self):
         modelSeq = Sequential()
         modelSeq.add(ZeroPadding2D((1, 1), input_shape=(128, 128, 3)))
-        for i in range(len(self.chromosome.c2d_Part.layers)):
-            filters = self.chromosome.c2d_Part.layers[i].filters
-            kernel = self.chromosome.c2d_Part.layers[i].kernel
-            activation = self.getActivation(0, i)
-            dropoutRate = self.chromosome.c2d_Part.layers[i].dropoutRate
-            maxpool = self.chromosome.c2d_Part.layers[i].maxpoolExist
+        # for i in range(len(self.network.c2d_Part.layers)):
+        #     filters = self.network.c2d_Part.layers[i].filters
+        #     kernel = self.network.c2d_Part.layers[i].kernel
+        #     activation = self.getActivation(0, i)
+        #     dropoutRate = self.network.c2d_Part.layers[i].dropoutRate
+        #     maxpool = self.network.c2d_Part.layers[i].maxpoolExist
+        #     modelSeq.add(
+        #         Conv2D(filters=int(filters), kernel_size=kernel, strides=(1, 1), padding='same', activation=activation))
+        #     if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate / 100)))
+        #     if maxpool: modelSeq.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+        #
+        # modelSeq.add(Flatten())
+        # for i in range(len(self.network.d2d_Part.layers)):
+        #     neurons = self.network.d2d_Part.layers[i].neurons
+        #     activation = self.getActivation(1, i)
+        #     dropoutRate = self.network.d2d_Part.layers[i].dropoutRate
+        #     modelSeq.add(Dense(units=int(neurons), activation=activation))
+        #     if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate / 100)))
+        #
+        # modelSeq.add(Dense(units=self.chr_p.d2d_rp.outputNumb, activation='softmax'))
+        for filters, kernel, cActIndex, cDropout, maxpool in zip(self.network.filters, self.network.kernels,
+                                                        self.network.cActIndexes, self.network.cDropouts, self.network.maxPools):
+            activation = self.network.cActivations[cActIndex]
             modelSeq.add(
                 Conv2D(filters=int(filters), kernel_size=kernel, strides=(1, 1), padding='same', activation=activation))
-            if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate / 100)))
+            if cDropout != 0: modelSeq.add(Dropout(float(cDropout) / 100))
             if maxpool: modelSeq.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
         modelSeq.add(Flatten())
-        for i in range(len(self.chromosome.d2d_Part.layers)):
-            neurons = self.chromosome.d2d_Part.layers[i].neurons
-            activation = self.getActivation(1, i)
-            dropoutRate = self.chromosome.d2d_Part.layers[i].dropoutRate
+        for neurons, dActIndex, dDropout in zip(self.network.neurons, self.network.dActIndexes, self.network.dDropouts):
+            activation = self.network.dActivations[dActIndex]
             modelSeq.add(Dense(units=int(neurons), activation=activation))
-            if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate / 100)))
+            if dDropout != 0: modelSeq.add(Dropout(float(dDropout) / 100))
 
-        modelSeq.add(Dense(units=self.chr_p.d2d_rp.outputNumb, activation='softmax'))
+        modelSeq.add(Dense(units=self.network.outputs_numb, activation='softmax'))
         return modelSeq
 
     def train(self, model, trainX, trainY, testX, testY):
         print("[INFO] training network...")
-        Support.send("chrOutput_TE", "appendText", "[INFO] training network...", self.sock)
-        lr = self.chromosome.constLR
+        # Support.send("chrOutput_TE", "appendText", "[INFO] training network...", self.sock)
+        lr = self.network.LR
         # настроить выбор оптимизатора!!
         opt = SGD(lr=lr)
         # настроить лосс!!
+        summary = model.summary()
         loss_func = "categorical_crossentropy"
         model.compile(loss=loss_func, optimizer=opt, metrics=["acc"])
 
@@ -151,7 +204,7 @@ class VGG:
                                  height_shift_range=0.1, shear_range=0.2, zoom_range=0.2,
                                  horizontal_flip=True, fill_mode="nearest")
         callbacks = self.chr_p.nrp.callbacks_handler.getCallbacks()
-        callbacks.append(FitLogger(self.sock))
+        callbacks.append(FitLogger(self.pc_send_socket))
         # callbacks = [FitLogger(self.sock)]
         H = model.fit_generator(aug.flow(trainX, trainY, batch_size=self.chr_p.nrp.batchSize),
                                 validation_data=(testX, testY), steps_per_epoch=len(trainX) // self.chr_p.nrp.batchSize,
@@ -192,8 +245,8 @@ class VGG:
         # plot_data["acc"] = H.history["acc"]
         # plot_data["val_acc"] = H.history["val_acc"]
         plot_data = json.dumps(plot_data)
-
-        Support.send("plot_ui", "chr_plotting", plot_data, self.sock)
+        send_remaster("plot_data", plot_data, self.pc_send_socket)
+        # Support.send("plot_ui", "chr_plotting", plot_data, self.sock)
         ###########################################
 
         # переделать под интерфейс
@@ -226,9 +279,9 @@ class VGG:
     def saveModel(self, model, lb):
         # сохраняем модель и бинаризатор меток на диск
         print("[INFO] serializing network and label binarizer...")
-        # model.save(self.chr_p.nrp.modelPath + "\\temp_model")
-        model.save(self.chr_p.nrp.modelPath + "\\temp_model.h5")
-        with open(self.chr_p.nrp.labelPath + "\\temp_label", "wb") as f:
+        # model.save(self.project_path + "/saved/temp_model")
+        model.save(self.project_path + "/saved/temp_model.h5")
+        with open(self.project_path + "/saved/temp_label", "wb") as f:
             # f = open(self.chr_p.nrp.labelPath + "\\temp_label", "wb")
             f.write(pickle.dumps(lb))
 
@@ -236,9 +289,9 @@ class VGG:
         # подходитЬ не для всех
         # придумат че то другое
         if mode == 0:
-            return self.chr_p.c2d_rp.activations[self.chromosome.c2d_Part.layers[i].actIndex]
+            return self.activations[self.network.c2d_Part.layers[i].actIndex]
         else:
-            return self.chr_p.d2d_rp.activations[self.chromosome.d2d_Part.layers[i].actIndex]
+            return self.chr_p.d2d_rp.activations[self.network.d2d_Part.layers[i].actIndex]
 
     def getOptimizer(self, lr):
         # доделать!!!

@@ -1,4 +1,4 @@
-from Structures.Dense.D2dRandomParams import D2dRandomParams
+from master.Structures.Dense.D2dRandomParams import D2dRandomParams
 import random
 
 

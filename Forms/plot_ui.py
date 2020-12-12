@@ -21,7 +21,6 @@ def setOneAxesProperties(ax, title, x_label, y_label):
     pass
 
 
-
 class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, project_controller: Project_controller = None):
         super().__init__()
@@ -39,7 +38,6 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         self.hide()
-
 
     def redraw_ax1(self):
         self.ax1.clear()
@@ -72,9 +70,11 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ax3.clear()
         for i in self.project_controller.Accuracies.columns:
             if i != "epoch":
-                self.ax3.plot(self.project_controller.Accuracies[i].values, self.project_controller.params_count[i].values,
+                self.ax3.plot(self.project_controller.Accuracies[i].values,
+                              self.project_controller.params_count[i].values,
                               label=i)
-                self.ax3.scatter(self.project_controller.Accuracies[i].values, self.project_controller.params_count[i].values)
+                self.ax3.scatter(self.project_controller.Accuracies[i].values,
+                                 self.project_controller.params_count[i].values)
 
         setOneAxesProperties(self.ax3, "Accuracy - Params", "Accuracy", "Params")
         self.canvas.draw()
@@ -97,12 +97,12 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ax4.legend(bbox_to_anchor=(1.05, 1))
         self.canvas.draw()
 
-
     def redraw_ax5(self):
         self.ax5.clear()
         for i in self.project_controller.params_count.columns:
             if i != "epoch":
-                self.ax5.plot(self.project_controller.params_count["epoch"].values, self.project_controller.params_count[i].values,
+                self.ax5.plot(self.project_controller.params_count["epoch"].values,
+                              self.project_controller.params_count[i].values,
                               label=i)
                 self.ax5.scatter(self.project_controller.params_count["epoch"].values,
                                  self.project_controller.params_count[i].values)
@@ -110,22 +110,29 @@ class PlotWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.canvas.draw()
         pass
 
-
-
-
     @QtCore.pyqtSlot(object)
     def connect_project_controller(self, reference):
         self.project_controller = reference
 
     @QtCore.pyqtSlot(object)
     def refresh_figure(self, ax):
-        if ax == 1: self.redraw_ax1()
-        elif ax == 2: self.redraw_ax2()
-        elif ax == 3: self.redraw_ax3()
-        elif ax == 4: self.redraw_ax4()
-        elif ax == 5: self.redraw_ax5()
+        if ax == 1:
+            self.redraw_ax1()
+        elif ax == 2:
+            self.redraw_ax2()
+        elif ax == 3:
+            self.redraw_ax3()
+        elif ax == 4:
+            self.redraw_ax4()
+        elif ax == 5:
+            self.redraw_ax5()
 
-
+    def refresh(self):
+        self.redraw_ax1()
+        self.redraw_ax2()
+        self.redraw_ax3()
+        self.redraw_ax4()
+        self.redraw_ax5()
 
     @QtCore.pyqtSlot(object)
     def refreshFigure(self, data: dict):

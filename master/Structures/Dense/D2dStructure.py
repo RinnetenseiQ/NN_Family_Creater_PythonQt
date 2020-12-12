@@ -1,7 +1,7 @@
-from Structures.Dense.D2dRandomParams import D2dRandomParams
+from master.Structures.Dense.D2dRandomParams import D2dRandomParams
 import math
-from Structures.Dense.D2dLayer import D2dLayer
-from Structures.NetworkRandomParams import NetworkRandomParams
+from master.Structures.Dense.D2dLayer import D2dLayer
+from master.Structures.NetworkRandomParams import NetworkRandomParams
 import Support
 import random
 
@@ -19,7 +19,6 @@ class D2dStructure:
 
         self.layersNumb = self.sr.randrange(1, d2d_rp.layersNumbRange)
         self.layers = []
-
         self.sameActivations = False
         if self.sr.randrange(100) <= 20:
             self.sameActivations = True

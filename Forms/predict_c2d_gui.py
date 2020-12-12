@@ -7,7 +7,7 @@ from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QImage, QPixmap
 
 from Forms.Parents.predict_c2d_gui_parent import Ui_PredictC2DWindow
-from Webcam_captures.Video_capture import Video_capture
+from master.Webcam_captures.Video_capture import Video_capture
 
 
 class PredictC2DWindow(QtWidgets.QMainWindow, Ui_PredictC2DWindow):

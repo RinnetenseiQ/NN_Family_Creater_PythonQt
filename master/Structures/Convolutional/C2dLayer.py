@@ -1,4 +1,4 @@
-from Structures.Convolutional import C2dRandomParams
+from master.Structures.Convolutional import C2dRandomParams
 import random
 
 

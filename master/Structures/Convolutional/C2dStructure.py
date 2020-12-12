@@ -1,6 +1,6 @@
 import random
-from Structures.Convolutional.C2dLayer import C2dLayer
-from Structures.Convolutional.C2dRandomParams import C2dRandomParams
+from master.Structures.Convolutional.C2dLayer import C2dLayer
+from master.Structures.Convolutional.C2dRandomParams import C2dRandomParams
 import math
 import Support
 

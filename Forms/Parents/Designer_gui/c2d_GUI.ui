@@ -85,7 +85,7 @@
           <x>10</x>
           <y>10</y>
           <width>411</width>
-          <height>201</height>
+          <height>146</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,5">
@@ -198,58 +198,16 @@
          <item>
           <layout class="QGridLayout" name="gridLayout">
            <item row="2" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Labels</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="DatasetPath_LE">
-             <property name="text">
-              <string>D:\keras\datasets\animals</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="ModelPath_LE">
-             <property name="text">
-              <string>C:\keras\Directory\models</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="Labels_LE">
-             <property name="text">
-              <string>C:\keras\Directory\labels</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Plots</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="PlotsPath_LE">
-             <property name="text">
-              <string>C:\keras\Directory\plots</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
             <widget class="QLabel" name="label_4">
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Models&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Project path&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_7">
              <property name="text">
-              <string>Dataset</string>
+              <string>Dataset path</string>
              </property>
             </widget>
            </item>
@@ -260,26 +218,36 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
-            <widget class="QToolButton" name="ModelsPath_TB">
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="DatasetPath_LE">
              <property name="text">
-              <string>...</string>
+              <string>D:\keras\datasets\animals</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="project_path_LE">
+             <property name="text">
+              <string>C:\keras\Directory\models</string>
              </property>
             </widget>
            </item>
            <item row="2" column="2">
-            <widget class="QToolButton" name="LabelPath_TB">
+            <widget class="QToolButton" name="project_path_TB">
              <property name="text">
               <string>...</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="2">
-            <widget class="QToolButton" name="PlotPath_TB">
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_15">
              <property name="text">
-              <string>...</string>
+              <string>Project name</string>
              </property>
             </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="project_name_LE"/>
            </item>
           </layout>
          </item>
@@ -1093,7 +1061,7 @@
              <rect>
               <x>10</x>
               <y>10</y>
-              <width>421</width>
+              <width>411</width>
               <height>35</height>
              </rect>
             </property>
@@ -1499,7 +1467,7 @@
            <item row="2" column="1">
             <widget class="QLabel" name="label_12">
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Filters or Neurons&lt;br/&gt;pow index &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Filters or Neurons&lt;br/&gt;pow init index &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
@@ -1705,16 +1673,6 @@
               </widget>
              </item>
             </layout>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_15">
-             <property name="text">
-              <string>Network Name</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="netName_LE"/>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_18">

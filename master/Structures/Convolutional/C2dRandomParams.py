@@ -8,7 +8,7 @@ class C2dRandomParams:
     layersRange: int
 
     def __init__(self, layersRange: int = 5, fPowRange=None,
-                 actIndexRange=None, activations=None, kernelSizeRange=None,
+                 actIndexRange=3, activations=None, kernelSizeRange=None,
                  dropoutExist=False, dropoutRange=50):
         self.dropoutRange: int = dropoutRange
         self.dropoutExist: bool = dropoutExist
