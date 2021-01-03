@@ -32,14 +32,14 @@ class CallbacksHandler:
         # CSVLogger
         # progbar_logger
 
-        self.early_stopping = early_stopping or {"monitor": "val_acc",
+        self.early_stopping = early_stopping or {"monitor": "acc",
                                                  "min_delta": 0.01,
                                                  "patience": 5,
                                                  "mode": "auto",  # {min, max, auto}
                                                  "restore_best_weights": True,
                                                  "verbose": 1}
         self.model_checkpoint = model_checkpoint or {"filepath": "/Directory/checkpoints/temp_checkpoint.h5",
-                                                     "monitor": "val_acc",  # {loss,acc,val_loss,val_acc}
+                                                     "monitor": "acc",  # {loss,acc,val_loss,val_acc}
                                                      "verbose": 1,
                                                      "save_best_only": True,
                                                      "mode": "auto",  # {min, max, auto}

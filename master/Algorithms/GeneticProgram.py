@@ -79,7 +79,6 @@ class GeneticProgram(Thread):
 
     def c2dEvolve(self):
         self.population.clear()
-
         ########## Initialise population ##########
         send_remaster("gen_epoch", 0, self.pc_sock)
         for i in range(self.project_params.popSize):
@@ -87,15 +86,9 @@ class GeneticProgram(Thread):
             self.population[i].name = str(i + 1)
             print(self.population[-1].getNetConfig(0))
             send_remaster("chr_config", self.population[-1].getNetConfig(0), self.pc_sock)
-
-            # current_metrics = VGG(self.population[i], self.project_params, self.sock).learn()
-            print("start VGG")
             self.calculate_c2d(self.population[-1], self.project_params, self.net_port, self.opt_sock)
-            print("end VGG")
             data = json.loads(self.listener.buffer)
-
             self.listener.buffer = ""
-            # self.listener.buffer = None
             paramsCount = data.get("data")[0]
             report = data.get("data")[1]
             self.tempMetrics.append([paramsCount, report])
@@ -104,8 +97,6 @@ class GeneticProgram(Thread):
             send_remaster("interim_est", [paramsCount, report.get("accuracy")], self.pc_sock)
 
         self.setAssessment(1, self.tempMetrics)
-        # self.population = sorted(args, key=lambda x: x.address)
-
         self.population.sort(key=lambda x: x.assessment, reverse=True)
         send_remaster("accuracy", self.getAccuracy(0), self.pc_sock)
         send_remaster("assesment", self.getAssessment(1, 0), self.pc_sock)
@@ -117,6 +108,7 @@ class GeneticProgram(Thread):
         ########## Main cycle with genetic operators ###########
         select = selection(len(self.population), self.project_params.selection)
         for epoch in range(self.project_params.genEpoch):
+            send_remaster("accept", "", self.pc_sock)
             self.tempMetrics.clear()
             send_remaster("gen_epoch", epoch + 1, self.pc_sock)
             for i in range(len(self.population)):
@@ -133,13 +125,11 @@ class GeneticProgram(Thread):
                 if is_cross or is_mutate:
                     send_remaster("chr_config", self.population[i].getNetConfig(0), self.pc_sock)
                     self.calculate_c2d(self.population[i], self.project_params, self.net_port, self.opt_sock)
-                    # self.tempMetrics.append(VGG(self.population[i], self.project_params, self.sock).learn())
-
                     data = json.loads(self.listener.buffer)
                     self.listener.buffer = ""
-                    # self.listener.buffer = None
                     paramsCount = data.get("data")[0]
                     report = data.get("data")[1]
+                    #send_remaster("accept", "", self.pc_sock)
                     send_remaster("interim_est", [paramsCount, report.get("accuracy")], self.pc_sock)
                     self.population[i].paramsCount = paramsCount
                     self.population[i].report = report

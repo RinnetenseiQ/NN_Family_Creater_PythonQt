@@ -42,7 +42,6 @@ class C2dStructure:
                     self.layers[i].kernel[0] = self.layers[i].kernel[1]
                 self.layers[i].squareKernel = True
         if self.sameKernel:
-            print(len(self.layers))
             absorber = self.sr.randrange(len(self.layers))
             for i in range(len(self.layers)): self.layers[i].kernel = self.layers[absorber].kernel
 

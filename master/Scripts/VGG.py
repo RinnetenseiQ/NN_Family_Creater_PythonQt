@@ -9,9 +9,6 @@ from typing import Dict, Any, Union
 import cv2
 import matplotlib
 import numpy as np
-from master.Callbacks.FitLogger import FitLogger
-from master.Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
-from master.Structures.Network import Network
 from imutils import paths
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
@@ -24,13 +21,14 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-import Support
 from Support import send_remaster
+from master.Callbacks.FitLogger import FitLogger
+from master.Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
+from master.Structures.Network import Network
 
 matplotlib.use("Agg")
 
 
-# class VGG(Process):
 class VGG:
     def __init__(self, network: Network, chr_p: C2D_ChromosomeParams, project_controller_port: int,
                  optimising_port: int, project_path='../Projects/project'):
@@ -149,26 +147,6 @@ class VGG:
     def createModel(self):
         modelSeq = Sequential()
         modelSeq.add(ZeroPadding2D((1, 1), input_shape=(128, 128, 3)))
-        # for i in range(len(self.network.c2d_Part.layers)):
-        #     filters = self.network.c2d_Part.layers[i].filters
-        #     kernel = self.network.c2d_Part.layers[i].kernel
-        #     activation = self.getActivation(0, i)
-        #     dropoutRate = self.network.c2d_Part.layers[i].dropoutRate
-        #     maxpool = self.network.c2d_Part.layers[i].maxpoolExist
-        #     modelSeq.add(
-        #         Conv2D(filters=int(filters), kernel_size=kernel, strides=(1, 1), padding='same', activation=activation))
-        #     if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate / 100)))
-        #     if maxpool: modelSeq.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-        #
-        # modelSeq.add(Flatten())
-        # for i in range(len(self.network.d2d_Part.layers)):
-        #     neurons = self.network.d2d_Part.layers[i].neurons
-        #     activation = self.getActivation(1, i)
-        #     dropoutRate = self.network.d2d_Part.layers[i].dropoutRate
-        #     modelSeq.add(Dense(units=int(neurons), activation=activation))
-        #     if dropoutRate != 0: modelSeq.add(Dropout(float(dropoutRate / 100)))
-        #
-        # modelSeq.add(Dense(units=self.chr_p.d2d_rp.outputNumb, activation='softmax'))
         for filters, kernel, cActIndex, cDropout, maxpool in zip(self.network.filters, self.network.kernels,
                                                         self.network.cActIndexes, self.network.cDropouts, self.network.maxPools):
             activation = self.network.cActivations[cActIndex]

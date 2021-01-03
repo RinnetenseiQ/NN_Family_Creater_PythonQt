@@ -232,27 +232,25 @@ class Project_controller:
 
 class Communicator(QtCore.QObject):
     pinok = QtCore.pyqtSignal(object)
-    ui_pinok = QtCore.pyqtSignal()
+    ui_pinok = QtCore.pyqtSignal(object)
 
 
-class Listener(Thread):
-    # signal = QtCore.pyqtSignal(object)
-
-    def __init__(self, sock, project_controller):
+class ListenerParser(Thread):
+    def __init__(self, conn, project_controller):
         self.project_controller = project_controller
-        self.sock = sock
+        self.conn = conn
         super().__init__()
 
-    def run(self):
-        print("run")
-        conn, addr = self.sock.accept()
+    def run(self) -> None:
         self.buff = []
         while True:
-            data = conn.recv(20480).decode('UTF-8')
+            data = self.conn.recv(20480).decode('UTF-8')
+            #if self.break_point: breakpoint()
             if not data:
                 time.sleep(0.5)
                 continue
             self.buff.clear()
+            #if self.break_point: breakpoint()
             data = data.split("&")
             if data[-1] == "": data.pop(-1)
             if len(data) != 0: self.buff += data
@@ -261,7 +259,7 @@ class Listener(Thread):
                 continue
 
             for data in self.buff:
-                #data = eval(data)
+                # data = eval(data)
                 try:
                     data = json.loads(data)
                 except json.decoder.JSONDecodeError:
@@ -269,11 +267,17 @@ class Listener(Thread):
                 except TypeError:
                     data
                 self.update_pc(data)
-                if data.get("target") == "accept":
-                    conn, addr = self.sock.accept()
-            #conn, addr = self.sock.accept()
+                # if data.get("target") == "accept":
+                #   conn, addr = self.sock.accept()
+                    # self.sock.listen()
+            # conn, addr = self.sock.accept()
 
     def update_pc(self, data):
+
+        copy_str = str(self.project_controller.optimising_search_output)
+        str_list = copy_str.split("\n")
+        if len(str_list) >= 82:
+            self.break_point = True
         if data.get("target") == "accuracy":
             self.project_controller.Accuracies = self.project_controller.Accuracies.append(data.get("data"), ignore_index=True, sort=False)
             self.project_controller.communicator.ui_pinok.emit(self.project_controller)
@@ -286,22 +290,56 @@ class Listener(Thread):
         if data.get("target") == "chr_config":  # 2
             self.project_controller.chromosome_configs.append(data.get("data"))
             self.project_controller.optimising_search_output += data.get("data")
+            if len(self.project_controller.optimising_search_output) == len(copy_str):
+                breakpoint()
+            if self.project_controller.optimising_search_output is copy_str:
+                breakpoint()
         if data.get("target") == "interim_est":  # 3
             s = "Params: {}   Accuracy: {}".format(data.get("data")[0], data.get("data")[1])
             self.project_controller.optimising_search_output += "\n" + s + "\n\n"
+            if len(self.project_controller.optimising_search_output) == len(copy_str):
+                breakpoint()
         if data.get("target") == "gen_epoch":  # 1
             s = "################# Epoch {} ###################".format(str(data.get("data")))
             self.project_controller.optimising_search_output += s + "\n\n"
+            if len(self.project_controller.optimising_search_output) == len(copy_str):
+                breakpoint()
         if data.get("target") == "assesment_str":  # 4
             self.project_controller.optimising_search_output += data.get("data") + "\n"
+            if len(self.project_controller.optimising_search_output) == len(copy_str):
+                breakpoint()
         if data.get("target") == "net_output":
             self.project_controller.network_output += data.get("data") + "\n"
         #     pass
 
 
+
         #     pass
 
         self.project_controller.communicator.pinok.emit(self.project_controller)
+
+
+class Listener(Thread):
+    # signal = QtCore.pyqtSignal(object)
+
+    def __init__(self, sock, project_controller):
+        self.project_controller = project_controller
+        self.sock = sock
+        self.break_point = False
+        super().__init__()
+
+    def run(self):
+        print("run connection listening...")
+        #self.sock
+        while True:
+            conn, addr = self.sock.accept()
+            ListenerParser(conn, self.project_controller).start()
+
+
+
+
+
+
 
 
 class UIHandler(QtCore.QObject):
