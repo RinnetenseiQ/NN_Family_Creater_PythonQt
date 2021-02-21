@@ -22,6 +22,9 @@ from Forms.predict_c2d_gui import PredictC2DWindow
 from Forms.task_manager_gui import TasksWindow
 from Project_controller import Project_controller
 
+from tensorboard import program
+
+
 
 class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
     def __init__(self):
@@ -157,12 +160,26 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
 
     def update_text(self):
         self.output_1_TE.setText(self.selected_pc.optimising_search_output)
+        pos_x = self.output_2_TE_2.cursor().pos().x()
+        pos_y = self.output_2_TE_2.cursor().pos().y()
+        len_old = len(self.output_2_TE_2.toPlainText())
+        len_new = len(self.selected_pc.network_output)
+        diff = self.selected_pc.network_output[len_old: len_new]
+        self.output_2_TE_2.append(diff)
         # self.output_2_TE_2.setText(self.selected_pc.network_output)
-        TE_2_text = self.output_2_TE_2.toPlainText()
-        if TE_2_text != "":
-            self.output_2_TE_2.append(self.selected_pc.network_output.split(TE_2_text)[0])
-        else:
-            self.output_2_TE_2.append(self.selected_pc.network_output)
+        if self.output_2_TE_2.verticalScrollBar().value() != self.output_2_TE_2.verticalScrollBar().maximum():
+            self.output_2_TE_2.cursor().pos().setX(pos_x)
+            self.output_2_TE_2.cursor().pos().setY(pos_y)
+        #TE_2_text = self.output_2_TE_2.toPlainText()
+        # if TE_2_text != "":
+        #     pos_x = self.output_2_TE_2.cursor().pos().x()
+        #     pos_y = self.output_2_TE_2.cursor().pos().y()
+        #     self.output_2_TE_2.append(self.selected_pc.network_output.split(TE_2_text)[0])
+        #     self.output_2_TE_2.cursor().pos().setX(pos_x)
+        #     self.output_2_TE_2.cursor().pos().setY(pos_y)
+        # else:
+        #     self.output_2_TE_2.append(self.selected_pc.network_output)
+
         self.erroneous_output_TE.setText(self.selected_pc.erroneus_output)
 
     def update_plot(self, pc_instance):
@@ -530,6 +547,11 @@ class Project_Viewer(QWidget):
             # self.plot_window = PlotWindow(self.project_controller)
             # self.project_controller.communicator.ui_pinok.connect(self.plot_window.refresh)
             # self.plot_window.show()
+
+            ##### Test Tensorboard #######
+            # tb = program.TensorBoard()
+            # tb.configure(argv=[None, '--logdir', "logs"])
+            # url = tb.launch()
 
         else:
             self.play_pause_btn.setIcon(QtGui.QIcon('../Forms/resourses/play_btn.png'))

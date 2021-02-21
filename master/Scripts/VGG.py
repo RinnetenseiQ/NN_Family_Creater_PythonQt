@@ -26,7 +26,7 @@ from master.Callbacks.FitLogger import FitLogger
 from master.Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
 from master.Structures.Network import Network
 
-matplotlib.use("Agg")
+#matplotlib.use("Agg")
 
 
 class VGG:
@@ -62,40 +62,49 @@ class VGG:
 
     def learn(self):
         # изменить название
-        try:
-            lb, trainX, testX, trainY, testY = self.loadData()
-            model = self.createModel()
-            history = self.train(model, trainX, trainY, testX, testY)
-            summary = self.estimateModel(history, model, testX, testY, lb)
-            # if summary == [0, 0]: summary = [0, {"accuracy": 0}]
-            send_remaster("summary", summary, self.opt_send_socket)
-            send_remaster("accept", "", self.pc_send_socket)
-            self.opt_send_socket.close()
-            self.pc_send_socket.close()
-            #self.saveModel(model, lb)
+        # try:
+        #     lb, trainX, testX, trainY, testY = self.loadData()
+        #     model = self.createModel()
+        #     history = self.train(model, trainX, trainY, testX, testY)
+        #     summary = self.estimateModel(history, model, testX, testY, lb)
+        #     # if summary == [0, 0]: summary = [0, {"accuracy": 0}]
+        #     send_remaster("summary", summary, self.opt_send_socket)
+        #     send_remaster("accept", "", self.pc_send_socket)
+        #     self.opt_send_socket.close()
+        #     self.pc_send_socket.close()
+        #     #self.saveModel(model, lb)
+        #
+        #     # return summary
+        # except MemoryError:
+        #     print("Memory Error")
+        #     summary = [0, {"accuracy": 0}]
+        #     send_remaster("summary", summary, self.opt_send_socket)
+        #     self.opt_send_socket.close()
+        #     self.pc_send_socket.close()
+        #     # return summary
+        # except Exception:
+        #     print("Exeption")
+        #     summary = [0, {"accuracy": 0}]
+        #     send_remaster("summary", summary, self.opt_send_socket)
+        #     self.opt_send_socket.close()
+        #     self.pc_send_socket.close()
+
 
             # return summary
-        except MemoryError:
-            print("Memory Error")
-            summary = [0, {"accuracy": 0}]
-            send_remaster("summary", summary, self.opt_send_socket)
-            self.opt_send_socket.close()
-            self.pc_send_socket.close()
-            # return summary
-        except Exception:
-            print("Exeption")
-            summary = [0, {"accuracy": 0}]
-            send_remaster("summary", summary, self.opt_send_socket)
-            self.opt_send_socket.close()
-            self.pc_send_socket.close()
-            # return summary
+
+
         ####### For testing ########
-        # lb, trainX, testX, trainY, testY = self.loadData()
-        # model = self.createModel()
-        # history = self.train(model, trainX, trainY, testX, testY)
-        # summary = self.estimateModel(history, model, testX, testY, lb)
-        # # if summary == [0, 0]: summary = [0, {"accuracy": 0}]
-        # self.saveModel(model, lb)
+        lb, trainX, testX, trainY, testY = self.loadData()
+        model = self.createModel()
+        history = self.train(model, trainX, trainY, testX, testY)
+        summary = self.estimateModel(history, model, testX, testY, lb)
+        # if summary == [0, 0]: summary = [0, {"accuracy": 0}]
+        send_remaster("summary", summary, self.opt_send_socket)
+        send_remaster("accept", "", self.pc_send_socket)
+        self.opt_send_socket.close()
+        self.pc_send_socket.close()
+        # if summary == [0, 0]: summary = [0, {"accuracy": 0}]
+        #self.saveModel(model, lb)
         # return summary
 
     def loadData(self):

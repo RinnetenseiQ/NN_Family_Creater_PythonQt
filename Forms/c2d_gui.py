@@ -779,7 +779,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         #self.earlyStopping_ChB.setDisabled(True)
         #self.modelCheckpoint_ChB.setDisabled(True)
-        self.tensorBoard_ChB.setDisabled(True)
+        #self.tensorBoard_ChB.setDisabled(True)
         self.scheduler_ChB.setDisabled(True)
         self.terminateNaN_ChB.setDisabled(True)
         self.ReduceLR_ChB.setDisabled(True)

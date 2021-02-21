@@ -1,3 +1,5 @@
+import datetime
+
 from tensorflow.keras.callbacks import (EarlyStopping, ModelCheckpoint,
                                         TensorBoard, LearningRateScheduler,
                                         TerminateOnNaN, ReduceLROnPlateau,
@@ -46,9 +48,11 @@ class CallbacksHandler:
                                                      "save_weights_only": False,
                                                      "save_freq": "epoch"  # "epoch" or integer
                                                      }
+
+        #log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         self.tensorboard = tensorboard or {"log_dir": "logs",  # the path of the directory where to save the log files
                                                                # to be parsed by TensorBoard.
-                                           "histogram_freq": 0,  # frequency (in epochs), if 0 - without hist
+                                           "histogram_freq": 1,  # frequency (in epochs), if 0 - without hist
                                            "write_graph": True,  # whether to visualize the graph in TensorBoard.
                                                                  # The log file can become quite
                                                                  # large when write_graph is set to True.
