@@ -15,6 +15,7 @@ def handle_server(action, data, name):
     if name == "client3":
         print("data from client3: {} | {}".format(action, data))
 
+
 def handle_client(action, data, name):
     print("action: {}, data: {}".format(action, data))
 
@@ -67,7 +68,6 @@ class Charm_Socket:
         else:
             self.connections[-1].send(bytes(data, encoding="utf-8"))
 
-
     def send2(self, message: str):
         message += os.linesep
         if self.is_server:
@@ -95,19 +95,21 @@ class Listener(Thread):
             for string in raw_buff:
                 if string != "":
                     self.buffer.append(string)
-            #self.name = "pnx"
+            # self.name = "pnx"
             if len(self.buffer) > 0:
                 for string in self.buffer:
                     dictionary = json.loads(string)
                     if dictionary["action"] == "connect":
                         self.client_name = dictionary["data"]
-                    else: self.listen(dictionary["action"], dictionary["data"], self.client_name)
+                    else:
+                        self.listen(dictionary["action"], dictionary["data"], self.client_name)
 
             self.buffer.clear()
 
     def listen(self, action, data, name):
         print("name")
         pass
+
 
 def test():
     charm_socket_server = Charm_Socket(listener=handle_server, args=(), address="localhost",
@@ -122,6 +124,7 @@ def test():
                                         name='client3', port=6121)
     charm_socket_client3.send("", "test3")
     charm_socket_server.send("", "server test")
+
 
 if __name__ == "__main__":
     with PyCallGraph(GraphvizOutput(output_file="../charm_sock.png")):
