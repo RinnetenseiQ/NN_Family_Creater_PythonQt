@@ -25,9 +25,15 @@ from Support import send_remaster
 from master.Callbacks.FitLogger import FitLogger
 from master.Chromosomes.C2D_ChromosomeParams import C2D_ChromosomeParams
 from master.Structures.Network import Network
+from threading import Thread
+import time
 
 #matplotlib.use("Agg")
 
+def func():
+    while True:
+        print("thread")
+        time.sleep(1)
 
 class VGG:
     def __init__(self, network: Network, chr_p: C2D_ChromosomeParams, project_controller_port: int,
@@ -94,6 +100,7 @@ class VGG:
 
 
         ####### For testing ########
+
         lb, trainX, testX, trainY, testY = self.loadData()
         model = self.createModel()
         history = self.train(model, trainX, trainY, testX, testY)
