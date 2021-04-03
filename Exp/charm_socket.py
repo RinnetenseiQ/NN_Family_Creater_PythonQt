@@ -9,7 +9,7 @@ from pycallgraph.output import GraphvizOutput
 
 
 
-def handle_server(action, data, name):
+def handle_server(action, data, name, charm_socket):
     if name == "client":
         print("data from client: {} | {}".format(action, data))
     if name == "client2":
@@ -18,10 +18,10 @@ def handle_server(action, data, name):
         print("data from client3: {} | {}".format(action, data))
 
 
-def handle_client(action, data, name):
+def handle_client(action, data, name, charm_socket):
     print("action: {}, data: {}".format(action, data))
 
-def handle_client2(action, data, name):
+def handle_client2(action, data, name, charm_socket):
     print("Hello from server to client2")
 
     # if action == '':
@@ -50,7 +50,7 @@ class Charm_Socket:
             self.sock.connect((self.address, self.port))
             self.connections[self.sock] = ""
             self.send("connect", self.name[-1])
-            thread = Listener(self.name, self.sock, self.connections, self.buff_size)
+            thread = Listener(self.name, self.sock, self.connections, self.buff_size, self)
             thread.listen = self.listener
             thread.start()
 
@@ -58,7 +58,7 @@ class Charm_Socket:
         while True:
             conn, addr = self.sock.accept()
             self.connections[conn] = ""
-            thread = Listener(self.name, conn, self.connections, self.buff_size)
+            thread = Listener(self.name, conn, self.connections, self.buff_size, self)
             thread.listen = self.listener
             thread.start()
 
@@ -91,8 +91,9 @@ class Charm_Socket:
 
 class Listener(Thread):
 
-    def __init__(self, name: list, sock: socket.socket, connections: dict, buff_size: int):
+    def __init__(self, name: list, sock: socket.socket, connections: dict, buff_size: int, charm_socket):
         super().__init__()
+        self.charm_socket = charm_socket
         self.connections = connections
         self.name = name
         self.client_name = ''
@@ -115,11 +116,11 @@ class Listener(Thread):
                         self.client_name = dictionary["data"]
                         self.connections[self.sock] = self.client_name
                     else:
-                        self.listen(dictionary["action"], dictionary["data"], self.client_name)
+                        self.listen(dictionary["action"], dictionary["data"], self.client_name, self.charm_socket)
 
             self.buffer.clear()
 
-    def listen(self, action, data, name):
+    def listen(self, action, data, name, charm_socket):
         print("name")
         pass
 
