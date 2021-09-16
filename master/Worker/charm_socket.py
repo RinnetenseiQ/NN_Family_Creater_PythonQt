@@ -2,6 +2,7 @@ import socket
 import os
 from threading import Thread
 import json
+import sys
 
 
 # from pycallgraph import PyCallGraph
@@ -72,12 +73,20 @@ class Charm_Socket:
             for key, value in self.connections.items():
                 if name == value:
                     conn = key
-            conn.send(bytes(data, encoding="utf-8"))
+            message = bytes(data, encoding="utf-8")
+            conn.send(message)
+
+            ##### LOGS #######
+            print("message size(server) = ", sys.getsizeof(message))
 
             # for conn in self.connections:
             #     conn.send(bytes(data, encoding="utf-8"))
         else:
-            list(self.connections.keys())[-1].send(bytes(data, encoding="utf-8"))
+            message = bytes(data, encoding="utf-8")
+            list(self.connections.keys())[-1].send(message)
+
+            ##### LOGS #######
+            print(print("message size(client) = ", sys.getsizeof(message)))
 
     # def send2(self, message: str):
     #     message += os.linesep
