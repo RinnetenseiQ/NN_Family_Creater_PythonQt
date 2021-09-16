@@ -25,7 +25,6 @@ from Project_controller import Project_controller
 from tensorboard import program
 
 
-
 class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
     def __init__(self):
         super().__init__()
@@ -34,7 +33,7 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
         # self.plots_window = PlotWindow()
         self.setupUi(self)
         self.settings = QSettings()
-        self.loadSettings()
+        self.load_settings()
         self.initWidgets()
 
         self.selected_pc: Project_controller = None
@@ -122,7 +121,7 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
         self.toolbar = Toolbar(self.canvas, self)
         self.lineUpping.addWidget(self.toolbar)
 
-    def loadSettings(self):
+    def load_settings(self):
         self.app_dataset_path_LE.setText(self.settings.value("app_datasetPath", "C:/", type=str))
         self.saveTo_path_LE.setText(self.settings.value("custom_model_path", "C:/", type=str))
 
@@ -154,7 +153,7 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
     def update_output(self, pc_instance):
         if pc_instance is self.selected_pc:
             ###
-            #self.update_plot(pc_instance)
+            # self.update_plot(pc_instance)
             self.update_text()
         pass
 
@@ -170,7 +169,7 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
         if self.output_2_TE_2.verticalScrollBar().value() != self.output_2_TE_2.verticalScrollBar().maximum():
             self.output_2_TE_2.cursor().pos().setX(pos_x)
             self.output_2_TE_2.cursor().pos().setY(pos_y)
-        #TE_2_text = self.output_2_TE_2.toPlainText()
+        # TE_2_text = self.output_2_TE_2.toPlainText()
         # if TE_2_text != "":
         #     pos_x = self.output_2_TE_2.cursor().pos().x()
         #     pos_y = self.output_2_TE_2.cursor().pos().y()
@@ -217,7 +216,7 @@ class StartPageWindow(QtWidgets.QMainWindow, Ui_StartPageWindow):
         temp_project_controller.communicator.ui_pinok.connect(self.update_plot)
         # temp_project_controller.socket_port = self.get_uniq_socket_port()
         self.project_controllers.append(temp_project_controller)
-        #self.update_projects_list()
+        # self.update_projects_list()
         self.update_list_viewers("active")
 
     def get_uniq_socket_port(self):
@@ -521,7 +520,7 @@ class Project_Viewer(QWidget):
 
     def toQueue_btn_Click(self):
         self.project_controller.is_in_queue = True
-        #self.parent_window.update_projects_list()
+        # self.parent_window.update_projects_list()
         self.parent_window.update_list_viewers("queue")
         pass
 
@@ -570,7 +569,6 @@ class Project_Viewer(QWidget):
         pass
 
 
-
 if __name__ == '__main__':
     # Новый экземпляр QApplication
     # app = QtWidgets.QApplication(sys.argv)
@@ -580,7 +578,7 @@ if __name__ == '__main__':
 
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
-    #app.setStyleSheet(qdarkstyle.load_stylesheet())
+    # app.setStyleSheet(qdarkstyle.load_stylesheet())
     # app.setSt
     # app.setStyle('windowsvista')
     # app.setStyle('Windows')

@@ -46,6 +46,7 @@ class VGG:
         self.opt_send_socket = socket.socket()
         self.opt_send_socket.connect(("localhost", optimising_port))
 
+
         self.pc_send_socket = socket.socket()
         try:
             self.pc_send_socket.connect(("localhost", project_controller_port))
